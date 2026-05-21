@@ -107,12 +107,26 @@ export default function Home() {
         />
       )}
       
-      {/* Premium Footer */}
-      <footer className="border-t border-border/50 py-12 bg-secondary/10">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} AI Trending Prompts. Powered by AI.
-          </p>
+      <footer className="relative mt-8 overflow-hidden border-t border-border/60 bg-gradient-to-b from-secondary/20 via-background to-background">
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+        <div className="container mx-auto px-4 py-10 md:py-12">
+          <div className="flex flex-col items-center justify-between gap-4 text-center md:flex-row md:text-left">
+            <div className="space-y-1">
+              <p className="text-base font-semibold tracking-wide text-foreground">
+                AI Trending Prompts
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Discover, save, and explore AI-generated inspiration in one place.
+              </p>
+            </div>
+
+            <div className="flex flex-col items-center gap-1 text-sm text-muted-foreground md:items-end">
+              <p>&copy; {new Date().getFullYear()} AI Trending Prompts</p>
+              <p className="rounded-full border border-border/70 bg-secondary/40 px-3 py-1 text-xs text-muted-foreground shadow-sm">
+                Powered by AI
+              </p>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

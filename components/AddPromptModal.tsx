@@ -43,6 +43,7 @@ export default function AddPromptModal({ prompt, onClose, onSave }: AddPromptMod
     try {
       const res = await fetch('/api/upload', {
         method: 'POST',
+        credentials: 'include',
         body: formData,
       });
 
@@ -51,7 +52,8 @@ export default function AddPromptModal({ prompt, onClose, onSave }: AddPromptMod
         setImageUrl(data.url);
         toast.success('Image uploaded successfully');
       } else {
-        toast.error('Failed to upload image');
+        const errorData = await res.json().catch(() => null);
+        toast.error(errorData?.error || 'Failed to upload image');
       }
     } catch (error) {
       toast.error('Error uploading image');
