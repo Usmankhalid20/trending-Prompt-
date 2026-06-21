@@ -6,10 +6,20 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const success = await login(body);
+    const result = await login(body);
 
-    if (success) {
-      return NextResponse.json({ success: true });
+    if (result) {
+      const response = NextResponse.json({ success: true });
+      response.cookies.set({
+        name: 'session',
+        value: result.session,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        expires: result.expires,
+      });
+      return response;
     } else {
       return NextResponse.json(
         { success: false, message: 'Invalid credentials' },
@@ -17,6 +27,7 @@ export async function POST(request: NextRequest) {
       );
     }
   } catch (error) {
+    console.error('Login API error:', error);
     return NextResponse.json(
       { success: false, message: 'Internal server error' },
       { status: 500 }

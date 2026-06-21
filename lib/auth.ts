@@ -29,22 +29,17 @@ export async function login(formData: any) {
     email === process.env.ADMIN_EMAIL &&
     password === process.env.ADMIN_PASSWORD
   ) {
-    // Create the session
+    // Return the session payload so the route handler can set the cookie.
     const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    const session = await encrypt({ email, expires });
-
-    // Save the session in a cookie
-    const cookieStore = await cookies();
-    cookieStore.set('session', session, { expires, httpOnly: true, secure: process.env.NODE_ENV === 'production' });
-    return true;
+    const session = await encrypt({ email });
+    return { session, expires };
   }
-  return false;
+  return null;
 }
 
 export async function logout() {
-  // Destroy the session
-  const cookieStore = await cookies();
-  cookieStore.set('session', '', { expires: new Date(0) });
+  // Cookie clearing is handled in the route handler so the path can be set explicitly.
+  return true;
 }
 
 export async function getSession() {
@@ -71,6 +66,7 @@ export async function updateSession(request: NextRequest) {
     value: await encrypt(parsed),
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
+    path: '/',
     expires: parsed.expires,
   });
   return res;

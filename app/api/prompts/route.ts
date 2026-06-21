@@ -1,4 +1,4 @@
-import clientPromise from '@/lib/mongodb';
+import { getMongoClient } from '@/lib/mongodb';
 import { getSession } from '@/lib/auth';
 import { NextResponse } from 'next/server';
 
@@ -18,7 +18,7 @@ export async function GET(request: Request) {
       }
     }
 
-    const client = await clientPromise;
+    const client = await getMongoClient();
     const db = client.db();
     const prompts = await db
       .collection('prompts')
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const client = await clientPromise;
+    const client = await getMongoClient();
     const db = client.db();
 
     const newPrompt = {

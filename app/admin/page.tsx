@@ -35,14 +35,13 @@ export default function AdminPage() {
           router.push('/admin/login');
           return;
         }
-
-        const promptsRes = await fetch('/api/prompts/admin'); // I'll create this or use a query param
-        // Actually I'll just use /api/prompts and filter on server if needed, 
-        // but for admin I want ALL prompts. I'll update the API route to handle this.
         const res = await fetch('/api/prompts?all=true');
         if (res.ok) {
           const data = await res.json();
           setPrompts(data);
+        } else {
+          const errorData = await res.json().catch(() => null);
+          console.error('Error fetching admin prompts:', errorData?.error || res.statusText);
         }
       } catch (error) {
         console.error('Fetch error:', error);

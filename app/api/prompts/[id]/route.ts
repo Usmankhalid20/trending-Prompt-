@@ -1,4 +1,4 @@
-import clientPromise from '@/lib/mongodb';
+import { getMongoClient } from '@/lib/mongodb';
 import { getSession } from '@/lib/auth';
 import { ObjectId } from 'mongodb';
 import { NextRequest, NextResponse } from 'next/server';
@@ -18,7 +18,7 @@ export async function PUT(
 
   try {
     const body = await request.json();
-    const client = await clientPromise;
+    const client = await getMongoClient();
     const db = client.db();
 
     // Remove _id from body to avoid update error
@@ -52,7 +52,7 @@ export async function DELETE(
   const { id } = await params;
 
   try {
-    const client = await clientPromise;
+    const client = await getMongoClient();
     const db = client.db();
 
     const result = await db.collection('prompts').deleteOne({
@@ -83,7 +83,7 @@ export async function PATCH(
 
   try {
     const body = await request.json(); // Expected { visible: boolean }
-    const client = await clientPromise;
+    const client = await getMongoClient();
     const db = client.db();
 
     const result = await db.collection('prompts').updateOne(
