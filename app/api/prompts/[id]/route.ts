@@ -1,5 +1,6 @@
 import { getMongoClient } from '@/lib/mongodb';
 import { getSession } from '@/lib/auth';
+import { apiErrorResponse } from '@/lib/api-error';
 import { ObjectId } from 'mongodb';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -11,7 +12,13 @@ export async function PUT(
 ) {
   const session = await getSession();
   if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return apiErrorResponse({
+      status: 401,
+      code: 'UNAUTHORIZED',
+      userMessage: 'You need to sign in as an admin to edit prompts.',
+      developerMessage: 'Missing or invalid admin session.',
+      context: 'Prompt update unauthorized',
+    });
   }
 
   const { id } = await params;
@@ -30,13 +37,25 @@ export async function PUT(
     );
 
     if (result.matchedCount === 0) {
-      return NextResponse.json({ error: 'Prompt not found' }, { status: 404 });
+      return apiErrorResponse({
+        status: 404,
+        code: 'PROMPT_NOT_FOUND',
+        userMessage: 'We could not find that prompt.',
+        developerMessage: `No prompt matched id ${id}.`,
+        context: 'Prompt update not found',
+      });
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error updating prompt:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return apiErrorResponse({
+      status: 500,
+      code: 'PROMPT_UPDATE_FAILED',
+      userMessage: 'We could not update that prompt. Please try again.',
+      developerMessage: 'Failed to update prompt in MongoDB.',
+      error,
+      context: 'Error updating prompt',
+    });
   }
 }
 
@@ -46,7 +65,13 @@ export async function DELETE(
 ) {
   const session = await getSession();
   if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return apiErrorResponse({
+      status: 401,
+      code: 'UNAUTHORIZED',
+      userMessage: 'You need to sign in as an admin to delete prompts.',
+      developerMessage: 'Missing or invalid admin session.',
+      context: 'Prompt delete unauthorized',
+    });
   }
 
   const { id } = await params;
@@ -60,13 +85,25 @@ export async function DELETE(
     });
 
     if (result.deletedCount === 0) {
-      return NextResponse.json({ error: 'Prompt not found' }, { status: 404 });
+      return apiErrorResponse({
+        status: 404,
+        code: 'PROMPT_NOT_FOUND',
+        userMessage: 'We could not find that prompt.',
+        developerMessage: `No prompt matched id ${id}.`,
+        context: 'Prompt delete not found',
+      });
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting prompt:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return apiErrorResponse({
+      status: 500,
+      code: 'PROMPT_DELETE_FAILED',
+      userMessage: 'We could not delete that prompt. Please try again.',
+      developerMessage: 'Failed to delete prompt from MongoDB.',
+      error,
+      context: 'Error deleting prompt',
+    });
   }
 }
 
@@ -76,7 +113,13 @@ export async function PATCH(
 ) {
   const session = await getSession();
   if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return apiErrorResponse({
+      status: 401,
+      code: 'UNAUTHORIZED',
+      userMessage: 'You need to sign in as an admin to update visibility.',
+      developerMessage: 'Missing or invalid admin session.',
+      context: 'Prompt visibility unauthorized',
+    });
   }
 
   const { id } = await params;
@@ -92,12 +135,24 @@ export async function PATCH(
     );
 
     if (result.matchedCount === 0) {
-      return NextResponse.json({ error: 'Prompt not found' }, { status: 404 });
+      return apiErrorResponse({
+        status: 404,
+        code: 'PROMPT_NOT_FOUND',
+        userMessage: 'We could not find that prompt.',
+        developerMessage: `No prompt matched id ${id}.`,
+        context: 'Prompt visibility not found',
+      });
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error patching prompt:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return apiErrorResponse({
+      status: 500,
+      code: 'PROMPT_VISIBILITY_UPDATE_FAILED',
+      userMessage: 'We could not update the prompt visibility. Please try again.',
+      developerMessage: 'Failed to patch prompt visibility in MongoDB.',
+      error,
+      context: 'Error patching prompt',
+    });
   }
 }

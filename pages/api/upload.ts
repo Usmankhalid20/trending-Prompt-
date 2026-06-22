@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
 import { decrypt } from '@/lib/auth';
+import { sendApiError } from '@/lib/api-error';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -56,12 +57,24 @@ async function isAuthenticated(req: NextApiRequest) {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return sendApiError(res, {
+      status: 405,
+      code: 'METHOD_NOT_ALLOWED',
+      userMessage: 'Only image uploads are allowed here.',
+      developerMessage: `Unsupported upload method: ${req.method}.`,
+      context: 'Upload method not allowed',
+    });
   }
 
   const authenticated = await isAuthenticated(req);
   if (!authenticated) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    return sendApiError(res, {
+      status: 401,
+      code: 'UNAUTHORIZED',
+      userMessage: 'Please sign in as an admin before uploading images.',
+      developerMessage: 'Upload attempted without a valid session cookie.',
+      context: 'Upload unauthorized',
+    });
   }
 
   try {
@@ -69,7 +82,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const file = (req as MulterRequest).file;
     if (!file?.buffer) {
-      return res.status(400).json({ error: 'No file uploaded' });
+      return sendApiError(res, {
+        status: 400,
+        code: 'NO_FILE_UPLOADED',
+        userMessage: 'Please choose an image file to upload.',
+        developerMessage: 'Upload request completed without a file buffer.',
+        context: 'Upload missing file',
+      });
     }
 
     const url = await new Promise<string>((resolve, reject) => {
@@ -89,12 +108,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     if (!url) {
-      return res.status(500).json({ error: 'Upload failed' });
+      return sendApiError(res, {
+        status: 500,
+        code: 'UPLOAD_FAILED',
+        userMessage: 'We could not upload that image. Please try another file.',
+        developerMessage: 'Cloudinary upload returned an empty URL.',
+        context: 'Upload returned empty URL',
+      });
     }
 
     return res.status(200).json({ url });
   } catch (error) {
-    console.error('Upload API error:', error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return sendApiError(res, {
+      status: 500,
+      code: 'UPLOAD_API_FAILED',
+      userMessage: 'We could not upload that image right now. Please try again.',
+      developerMessage: 'Upload route failed while parsing or sending the file to Cloudinary.',
+      error,
+      context: 'Upload API error',
+    });
   }
 }

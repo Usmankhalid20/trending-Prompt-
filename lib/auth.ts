@@ -2,7 +2,10 @@ import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
-const secretKey = process.env.JWT_SECRET || 'fallback-secret-key-change-me';
+const secretKey = process.env.JWT_SECRET;
+if (!secretKey) {
+  throw new Error('Please add JWT_SECRET to .env.local');
+}
 const key = new TextEncoder().encode(secretKey);
 
 export async function encrypt(payload: any) {

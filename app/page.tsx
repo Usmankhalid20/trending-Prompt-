@@ -19,6 +19,7 @@ interface Prompt {
 export default function Home() {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [searchQuery, setSearchQuery] = useState('');
@@ -32,9 +33,14 @@ export default function Home() {
         if (res.ok) {
           const data = await res.json();
           setPrompts(data);
+          setLoadError(null);
+        } else {
+          const errorData = await res.json().catch(() => null);
+          setLoadError(errorData?.message || errorData?.error || 'Could not load prompts right now.');
         }
       } catch (error) {
         console.error('Error fetching prompts:', error);
+        setLoadError('Could not load prompts right now. Please refresh and try again.');
       } finally {
         setIsLoading(false);
       }
@@ -77,6 +83,11 @@ export default function Home() {
           <div className="flex flex-col items-center justify-center py-24 gap-4">
             <Loader2 className="w-12 h-12 text-primary animate-spin" />
             <p className="text-muted-foreground font-medium animate-pulse">Discovering trending prompts...</p>
+          </div>
+        ) : loadError ? (
+          <div className="mx-auto max-w-2xl rounded-2xl border border-destructive/20 bg-destructive/5 p-6 text-center">
+            <p className="text-lg font-semibold text-foreground">Unable to load prompts</p>
+            <p className="mt-2 text-sm text-muted-foreground">{loadError}</p>
           </div>
         ) : filteredPrompts.length > 0 ? (
           <ImageGrid 

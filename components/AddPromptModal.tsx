@@ -53,7 +53,7 @@ export default function AddPromptModal({ prompt, onClose, onSave }: AddPromptMod
         toast.success('Image uploaded successfully');
       } else {
         const errorData = await res.json().catch(() => null);
-        toast.error(errorData?.error || 'Failed to upload image');
+        toast.error(errorData?.message || errorData?.error || 'Failed to upload image');
       }
     } catch (error) {
       toast.error('Error uploading image');

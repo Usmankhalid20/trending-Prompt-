@@ -41,10 +41,21 @@ export default function AdminPage() {
           setPrompts(data);
         } else {
           const errorData = await res.json().catch(() => null);
-          console.error('Error fetching admin prompts:', errorData?.error || res.statusText);
+          if (process.env.NODE_ENV !== 'production') {
+            console.warn(
+              'Admin prompts request failed:',
+              errorData?.message || errorData?.error || res.statusText,
+              errorData?.code || '',
+              errorData?.requestId || ''
+            );
+          }
+          toast.error(errorData?.message || errorData?.error || 'Could not load prompts');
         }
       } catch (error) {
-        console.error('Fetch error:', error);
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn('Admin prompts fetch threw:', error);
+        }
+        toast.error('Could not load prompts');
       } finally {
         setIsLoading(false);
       }
@@ -55,7 +66,12 @@ export default function AdminPage() {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      const res = await fetch('/api/auth/logout', { method: 'POST' });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        toast.error(errorData?.message || errorData?.error || 'Logout failed');
+        return;
+      }
       router.push('/admin/login');
     } catch (error) {
       toast.error('Logout failed');
@@ -78,6 +94,9 @@ export default function AdminPage() {
           prev.map((p) => (p._id === id ? { ...p, visible: !p.visible } : p))
         );
         toast.success('Visibility updated');
+      } else {
+        const errorData = await res.json().catch(() => null);
+        toast.error(errorData?.message || errorData?.error || 'Failed to update visibility');
       }
     } catch (error) {
       toast.error('Failed to update visibility');
@@ -95,6 +114,9 @@ export default function AdminPage() {
       if (res.ok) {
         setPrompts((prev) => prev.filter((p) => p._id !== id));
         toast.success('Prompt deleted');
+      } else {
+        const errorData = await res.json().catch(() => null);
+        toast.error(errorData?.message || errorData?.error || 'Failed to delete prompt');
       }
     } catch (error) {
       toast.error('Failed to delete prompt');
@@ -123,6 +145,9 @@ export default function AdminPage() {
             )
           );
           toast.success('Prompt updated');
+        } else {
+          const errorData = await res.json().catch(() => null);
+          toast.error(errorData?.message || errorData?.error || 'Failed to update prompt');
         }
       } else {
         // Create
@@ -136,6 +161,9 @@ export default function AdminPage() {
           const newPrompt = await res.json();
           setPrompts((prev) => [newPrompt, ...prev]);
           toast.success('Prompt added');
+        } else {
+          const errorData = await res.json().catch(() => null);
+          toast.error(errorData?.message || errorData?.error || 'Failed to add prompt');
         }
       }
       setShowAddModal(false);
