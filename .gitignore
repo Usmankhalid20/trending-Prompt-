@@ -121,3 +121,6 @@ out/
 .docusaurus
 
 .svelte-kit
+
+# Context files & internal documentation
+contexts_files/
