@@ -2,130 +2,127 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Lock, Mail, Loader2, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
+import { ShieldCheck, ArrowRight, Lock, Mail, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
 
 export default function AdminLoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
+      const data = await res.json();
 
-      if (data.success) {
-        toast.success('Logged in successfully');
-        router.push('/admin');
-        router.refresh();
-      } else {
-        toast.error(data.message || 'Invalid credentials');
+      if (!res.ok) {
+        throw new Error(data.error || 'Login failed');
       }
-    } catch (error) {
-      toast.error('An error occurred during login');
+
+      if (data.user.role === 'user') {
+        throw new Error('Access denied. Administrator credentials required.');
+      }
+
+      router.push('/admin');
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      {/* Background decoration */}
-      <div className="fixed inset-0 overflow-hidden -z-10 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/5 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-primary/10 blur-[120px]" />
-      </div>
+    <div className="min-h-screen bg-background flex flex-col justify-center items-center px-4 py-12">
+      <div className="w-full max-w-md space-y-8">
+        
+        {/* Header */}
+        <div className="text-center space-y-3">
+          <Link href="/" className="inline-flex items-center gap-2">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
+            <span className="font-bold text-xl tracking-tight text-foreground">
+              AI Prompt Hub
+            </span>
+          </Link>
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">
+            Administrator Portal
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Authorized admin credentials required to continue
+          </p>
+        </div>
 
-      <div className="w-full max-w-md">
-        <div className="bg-card border border-border rounded-2xl shadow-xl overflow-hidden">
-          <div className="p-8">
-            <div className="flex flex-col items-center mb-8">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center mb-4 shadow-lg shadow-primary/20">
-                <Lock className="w-8 h-8 text-primary-foreground" />
+        {/* Form Card */}
+        <div className="rounded-2xl border border-border/60 bg-card p-8 shadow-sm">
+          {error && (
+            <div className="mb-6 rounded-xl border border-destructive/20 bg-destructive/10 p-4 text-xs font-medium text-destructive">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-foreground">Admin Email</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="email"
+                  required
+                  placeholder="admin@aiprompthub.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-9"
+                />
               </div>
-              <h1 className="text-2xl font-bold text-foreground">Admin Login</h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                Enter your credentials to access the dashboard
-              </p>
             </div>
 
-            <form onSubmit={handleLogin} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="name@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10 h-11 bg-secondary/50 border-border focus:ring-primary/20"
-                    required
-                  />
-                </div>
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-foreground">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="password"
+                  required
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-9"
+                />
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
-                </div>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 h-11 bg-secondary/50 border-border focus:ring-primary/20"
-                    required
-                  />
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full h-11 text-base font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Authenticating...
-                  </>
-                ) : (
-                  <>
-                    Sign In
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </>
-                )}
-              </Button>
-            </form>
-          </div>
-          
-          <div className="p-4 bg-secondary/30 border-t border-border text-center">
-            <button 
-              onClick={() => router.push('/')}
-              className="text-xs text-muted-foreground hover:text-primary transition-colors"
-            >
-              ← Back to Gallery
-            </button>
-          </div>
+            <Button type="submit" disabled={isLoading} className="w-full font-semibold gap-2">
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  Authenticate Admin
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
+            </Button>
+          </form>
         </div>
+
+        {/* Security Notice */}
+        <p className="text-center text-xs text-muted-foreground max-w-xs mx-auto">
+          Public registration is disabled for administrator roles. Contact Super Admin to request access.
+        </p>
+
       </div>
     </div>
   );

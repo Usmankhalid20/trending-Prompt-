@@ -1,14 +1,13 @@
-import { logout } from '@/lib/auth';
 import { NextResponse } from 'next/server';
 
 export async function POST() {
-  await logout();
-  const response = NextResponse.json({ success: true });
-  response.cookies.set({
+  const res = NextResponse.json({ message: 'Logged out successfully' });
+  res.cookies.set({
     name: 'session',
     value: '',
+    httpOnly: true,
     expires: new Date(0),
     path: '/',
   });
-  return response;
+  return res;
 }

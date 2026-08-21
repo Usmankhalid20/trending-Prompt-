@@ -9,14 +9,35 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const all = searchParams.get('all') === 'true';
+    const category = searchParams.get('category');
+    const aiModel = searchParams.get('aiModel');
+    const search = searchParams.get('search');
     
-    let query = { visible: true };
+    let query: any = { visible: true };
     
     if (all) {
       const session = await getSession();
-      if (session) {
-        query = {} as any;
+      if (session && session.role !== 'user') {
+        query = {};
       }
+    }
+
+    if (category && category !== 'all') {
+      query.category = category;
+    }
+
+    if (aiModel && aiModel !== 'all') {
+      query.aiModel = aiModel;
+    }
+
+    if (search) {
+      const sanitized = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      query.$or = [
+        { title: { $regex: sanitized, $options: 'i' } },
+        { prompt: { $regex: sanitized, $options: 'i' } },
+        { category: { $regex: sanitized, $options: 'i' } },
+        { aiModel: { $regex: sanitized, $options: 'i' } },
+      ];
     }
 
     const client = await getMongoClient();
@@ -46,19 +67,42 @@ export async function POST(request: Request) {
     return apiErrorResponse({
       status: 401,
       code: 'UNAUTHORIZED',
-      userMessage: 'You need to sign in as an admin to create prompts.',
-      developerMessage: 'Missing or invalid admin session.',
+      userMessage: 'You need to sign in to submit a prompt.',
+      developerMessage: 'Missing session token.',
       context: 'Prompt create unauthorized',
     });
   }
 
   try {
     const body = await request.json();
+    const { title, prompt, category, aiModel, image } = body;
+
+    if (!title?.trim() || !prompt?.trim()) {
+      return apiErrorResponse({
+        status: 400,
+        code: 'INVALID_INPUT',
+        userMessage: 'Prompt title and content are required.',
+        developerMessage: 'Title or prompt body was empty.',
+        context: 'Prompt create validation failed',
+      });
+    }
+
     const client = await getMongoClient();
     const db = client.db();
 
+    const isAdmin = session.role !== 'user';
+
     const newPrompt = {
-      ...body,
+      title: title.trim(),
+      prompt: prompt.trim(),
+      category: category || 'General',
+      aiModel: aiModel || 'ChatGPT',
+      image: image || '/placeholder-prompt.png',
+      userId: session.userId,
+      authorName: session.name,
+      authorEmail: session.email,
+      status: isAdmin ? 'approved' : 'pending',
+      visible: isAdmin ? true : false,
       createdAt: new Date(),
       updatedAt: new Date(),
     };

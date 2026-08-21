@@ -1,275 +1,145 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Plus, LogOut, Loader2 } from 'lucide-react';
+import Link from 'next/link';
+import {
+  FileCheck2,
+  Clock,
+  Users,
+  FolderTree,
+  ArrowRight,
+  CheckCircle2,
+  XCircle,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import AdminSidebar from '@/components/AdminSidebar';
-import PromptsTable from '@/components/PromptsTable';
-import AddPromptModal from '@/components/AddPromptModal';
-import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
 
-interface Prompt {
-  _id?: string;
-  id: number;
-  title: string;
-  image: string;
-  prompt: string;
-  date: string;
-  visible: boolean;
-}
-
-export default function AdminPage() {
-  const [prompts, setPrompts] = useState<Prompt[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'manage'>('manage');
-  const router = useRouter();
+export default function AdminOverviewPage() {
+  const [prompts, setPrompts] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkAuthAndFetch = async () => {
-      try {
-        const authRes = await fetch('/api/auth/check');
-        if (!authRes.ok) {
-          router.push('/admin/login');
-          return;
-        }
-        const res = await fetch('/api/prompts?all=true');
-        if (res.ok) {
-          const data = await res.json();
-          setPrompts(data);
-        } else {
-          const errorData = await res.json().catch(() => null);
-          if (process.env.NODE_ENV !== 'production') {
-            console.warn(
-              'Admin prompts request failed:',
-              errorData?.message || errorData?.error || res.statusText,
-              errorData?.code || '',
-              errorData?.requestId || ''
-            );
-          }
-          toast.error(errorData?.message || errorData?.error || 'Could not load prompts');
-        }
-      } catch (error) {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn('Admin prompts fetch threw:', error);
-        }
-        toast.error('Could not load prompts');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    Promise.all([
+      fetch('/api/admin/prompts').then((res) => res.ok ? res.json() : []),
+      fetch('/api/admin/users').then((res) => res.ok ? res.json() : []),
+      fetch('/api/admin/categories').then((res) => res.ok ? res.json() : []),
+    ])
+      .then(([promptsData, usersData, categoriesData]) => {
+        if (Array.isArray(promptsData)) setPrompts(promptsData);
+        if (Array.isArray(usersData)) setUsers(usersData);
+        if (Array.isArray(categoriesData)) setCategories(categoriesData);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
-    checkAuthAndFetch();
-  }, [router]);
-
-  const handleLogout = async () => {
-    try {
-      const res = await fetch('/api/auth/logout', { method: 'POST' });
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => null);
-        toast.error(errorData?.message || errorData?.error || 'Logout failed');
-        return;
-      }
-      router.push('/admin/login');
-    } catch (error) {
-      toast.error('Logout failed');
-    }
-  };
-
-  const handleToggleVisibility = async (id: string) => {
-    const prompt = prompts.find((p) => p._id === id);
-    if (!prompt) return;
-
-    try {
-      const res = await fetch(`/api/prompts/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ visible: !prompt.visible }),
-      });
-
-      if (res.ok) {
-        setPrompts((prev) =>
-          prev.map((p) => (p._id === id ? { ...p, visible: !p.visible } : p))
-        );
-        toast.success('Visibility updated');
-      } else {
-        const errorData = await res.json().catch(() => null);
-        toast.error(errorData?.message || errorData?.error || 'Failed to update visibility');
-      }
-    } catch (error) {
-      toast.error('Failed to update visibility');
-    }
-  };
-
-  const handleDeletePrompt = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this prompt?')) return;
-
-    try {
-      const res = await fetch(`/api/prompts/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (res.ok) {
-        setPrompts((prev) => prev.filter((p) => p._id !== id));
-        toast.success('Prompt deleted');
-      } else {
-        const errorData = await res.json().catch(() => null);
-        toast.error(errorData?.message || errorData?.error || 'Failed to delete prompt');
-      }
-    } catch (error) {
-      toast.error('Failed to delete prompt');
-    }
-  };
-
-  const handleEditPrompt = (prompt: Prompt) => {
-    setEditingPrompt(prompt);
-    setShowAddModal(true);
-  };
-
-  const handleSavePrompt = async (data: Omit<Prompt, 'id'>) => {
-    try {
-      if (editingPrompt?._id) {
-        // Update
-        const res = await fetch(`/api/prompts/${editingPrompt._id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        });
-
-        if (res.ok) {
-          setPrompts((prev) =>
-            prev.map((p) =>
-              p._id === editingPrompt._id ? { ...data, _id: editingPrompt._id, id: p.id } : p
-            )
-          );
-          toast.success('Prompt updated');
-        } else {
-          const errorData = await res.json().catch(() => null);
-          toast.error(errorData?.message || errorData?.error || 'Failed to update prompt');
-        }
-      } else {
-        // Create
-        const res = await fetch('/api/prompts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...data, id: Date.now() }), // temporary id
-        });
-
-        if (res.ok) {
-          const newPrompt = await res.json();
-          setPrompts((prev) => [newPrompt, ...prev]);
-          toast.success('Prompt added');
-        } else {
-          const errorData = await res.json().catch(() => null);
-          toast.error(errorData?.message || errorData?.error || 'Failed to add prompt');
-        }
-      }
-      setShowAddModal(false);
-      setEditingPrompt(null);
-    } catch (error) {
-      toast.error('Failed to save prompt');
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <div className="h-screen flex flex-col items-center justify-center bg-background gap-4">
-        <Loader2 className="w-10 h-10 animate-spin text-primary" />
-        <p className="text-muted-foreground animate-pulse">Loading Dashboard...</p>
-      </div>
-    );
-  }
+  const totalPrompts = prompts.length;
+  const pendingPrompts = prompts.filter((p) => p.status === 'pending');
+  const publishedPrompts = prompts.filter((p) => p.status === 'published' || p.status === 'approved').length;
+  const totalUsers = users.length;
 
   return (
-    <div className="flex h-screen bg-background">
-      {/* Sidebar */}
-      <AdminSidebar activeTab={activeTab} onTabChange={setActiveTab} />
+    <div className="space-y-8">
+      
+      {/* Page Title */}
+      <div className="border-b border-border pb-6">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+          Admin Dashboard Overview
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Monitor system metrics, process moderation queue, and oversee user activity
+        </p>
+      </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Bar */}
-        <div className="border-b border-border bg-card p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                {activeTab === 'dashboard' ? 'Dashboard' : 'Manage Prompts'}
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                {activeTab === 'dashboard'
-                  ? 'Overview and statistics'
-                  : 'Edit, delete, and organize your AI prompts'}
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              {activeTab === 'manage' && (
-                <Button
-                  onClick={() => {
-                    setEditingPrompt(null);
-                    setShowAddModal(true);
-                  }}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-2"
-                >
-                  <Plus className="w-5 h-5" />
-                  Add New Prompt
-                </Button>
-              )}
-              <Button
-                variant="outline"
-                onClick={handleLogout}
-                className="border-border hover:bg-destructive hover:text-destructive-foreground transition-all"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </Button>
-            </div>
+      {/* Metrics Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="rounded-xl border border-border bg-card p-5 shadow-xs flex items-center gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500">
+            <Clock className="h-6 w-6" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground">Pending Moderation</p>
+            <p className="text-2xl font-bold text-foreground">{pendingPrompts.length}</p>
           </div>
         </div>
 
-        {/* Content Area */}
-        <div className="flex-1 overflow-auto p-6">
-          {activeTab === 'dashboard' ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
-                <p className="text-sm font-medium text-muted-foreground mb-2 uppercase tracking-wider">Total Prompts</p>
-                <p className="text-5xl font-bold text-foreground tracking-tight">{prompts.length}</p>
-              </div>
-              <div className="bg-card border border-border rounded-xl p-6 shadow-sm border-l-4 border-l-green-500">
-                <p className="text-sm font-medium text-muted-foreground mb-2 uppercase tracking-wider">Visible Prompts</p>
-                <p className="text-5xl font-bold text-green-600 tracking-tight">
-                  {prompts.filter((p) => p.visible).length}
-                </p>
-              </div>
-              <div className="bg-card border border-border rounded-xl p-6 shadow-sm border-l-4 border-l-orange-500">
-                <p className="text-sm font-medium text-muted-foreground mb-2 uppercase tracking-wider">Hidden Prompts</p>
-                <p className="text-5xl font-bold text-orange-500 tracking-tight">
-                  {prompts.filter((p) => !p.visible).length}
-                </p>
-              </div>
-            </div>
-          ) : (
-            <PromptsTable
-              prompts={prompts}
-              onToggleVisibility={handleToggleVisibility}
-              onDelete={handleDeletePrompt}
-              onEdit={handleEditPrompt}
-            />
-          )}
+        <div className="rounded-xl border border-border bg-card p-5 shadow-xs flex items-center gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500">
+            <CheckCircle2 className="h-6 w-6" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground">Published Prompts</p>
+            <p className="text-2xl font-bold text-foreground">{publishedPrompts}</p>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-5 shadow-xs flex items-center gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Users className="h-6 w-6" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground">Registered Users</p>
+            <p className="text-2xl font-bold text-foreground">{totalUsers}</p>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-5 shadow-xs flex items-center gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-secondary text-foreground">
+            <FolderTree className="h-6 w-6" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground">Active Categories</p>
+            <p className="text-2xl font-bold text-foreground">{categories.length}</p>
+          </div>
         </div>
       </div>
 
-      {/* Add/Edit Prompt Modal */}
-      {showAddModal && (
-        <AddPromptModal
-          prompt={editingPrompt}
-          onClose={() => {
-            setShowAddModal(false);
-            setEditingPrompt(null);
-          }}
-          onSave={handleSavePrompt}
-        />
-      )}
+      {/* Moderation Queue Preview */}
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-xs space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-foreground">Moderation Queue</h2>
+            <p className="text-xs text-muted-foreground">Prompts awaiting review and publishing</p>
+          </div>
+          <Link href="/admin/prompts" className="text-xs font-semibold text-primary hover:underline flex items-center gap-1">
+            Open Full Queue
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+
+        {loading ? (
+          <div className="py-12 text-center text-sm text-muted-foreground animate-pulse">
+            Fetching pending submissions...
+          </div>
+        ) : pendingPrompts.length === 0 ? (
+          <div className="py-12 text-center space-y-2">
+            <CheckCircle2 className="h-8 w-8 text-emerald-500 mx-auto" />
+            <p className="text-sm font-semibold text-foreground">Queue clear!</p>
+            <p className="text-xs text-muted-foreground">There are no prompts pending admin approval at this moment.</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-border/60">
+            {pendingPrompts.slice(0, 5).map((p) => (
+              <div key={p._id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-foreground text-sm">{p.title}</span>
+                    <Badge variant="outline" className="text-[10px]">{p.aiModel || 'ChatGPT'}</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">By {p.authorName || p.authorEmail || 'User'}</p>
+                </div>
+                <Link href="/admin/prompts">
+                  <Button size="sm" variant="outline" className="text-xs font-semibold">
+                    Review Prompt
+                  </Button>
+                </Link>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
     </div>
   );
 }
