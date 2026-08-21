@@ -1,6 +1,7 @@
 import { getMongoClient } from '@/lib/mongodb';
 import { getSession } from '@/lib/auth';
 import { apiErrorResponse } from '@/lib/api-error';
+import { getCache, setCache, clearCachePattern } from '@/lib/redis';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -12,9 +13,18 @@ export async function GET(request: Request) {
     const category = searchParams.get('category');
     const aiModel = searchParams.get('aiModel');
     const search = searchParams.get('search');
-    
+
+    // Build Cache Key
+    const cacheKey = `prompts:query:${search || 'none'}:${category || 'all'}:${aiModel || 'all'}:${all}`;
+
+    // Try Redis Cache First
+    const cachedPrompts = await getCache<any[]>(cacheKey);
+    if (cachedPrompts) {
+      return NextResponse.json(cachedPrompts);
+    }
+
     let query: any = { visible: true };
-    
+
     if (all) {
       const session = await getSession();
       if (session && session.role !== 'user') {
@@ -47,6 +57,9 @@ export async function GET(request: Request) {
       .find(query)
       .sort({ createdAt: -1 })
       .toArray();
+
+    // Cache in Redis for 60 seconds
+    await setCache(cacheKey, prompts, 60);
 
     return NextResponse.json(prompts);
   } catch (error) {
@@ -108,6 +121,9 @@ export async function POST(request: Request) {
     };
 
     const result = await db.collection('prompts').insertOne(newPrompt);
+
+    // Invalidate Redis cache
+    await clearCachePattern('prompts:');
 
     return NextResponse.json({ ...newPrompt, _id: result.insertedId }, { status: 201 });
   } catch (error) {
