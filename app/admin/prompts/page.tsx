@@ -141,79 +141,138 @@ export default function AdminPromptsPage() {
           No prompts found matching current filters.
         </div>
       ) : (
-        <div className="rounded-xl border border-border bg-card overflow-hidden shadow-xs">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-muted/50 border-b border-border text-muted-foreground uppercase tracking-wider font-semibold">
-                <tr>
-                  <th className="p-4">Prompt Info</th>
-                  <th className="p-4">Author</th>
-                  <th className="p-4">Status</th>
-                  <th className="p-4">Date</th>
-                  <th className="p-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60">
-                {prompts.map((p) => (
-                  <tr key={p._id} className="hover:bg-muted/30 transition-colors">
-                    <td className="p-4 max-w-xs">
-                      <p className="font-semibold text-foreground truncate text-sm">{p.title}</p>
-                      <p className="text-muted-foreground line-clamp-1 font-mono text-[11px] mt-0.5">
-                        {p.prompt}
-                      </p>
-                    </td>
+        <div className="space-y-4">
+          {/* Mobile Stacked Card View (< 640px) */}
+          <div className="sm:hidden space-y-3">
+            {prompts.map((p) => (
+              <div key={p._id} className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-xs">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h3 className="font-semibold text-foreground text-sm">{p.title}</h3>
+                    <p className="text-xs text-muted-foreground">By {p.authorName || 'User'}</p>
+                  </div>
+                  <Badge
+                    variant={
+                      p.status === 'published' || p.status === 'approved'
+                        ? 'default'
+                        : p.status === 'pending'
+                        ? 'secondary'
+                        : p.status === 'rejected'
+                        ? 'destructive'
+                        : 'outline'
+                    }
+                    className="capitalize text-[10px]"
+                  >
+                    {p.status}
+                  </Badge>
+                </div>
+                <p className="text-xs font-mono text-muted-foreground line-clamp-2 bg-muted/30 p-2 rounded-lg">
+                  {p.prompt}
+                </p>
+                <div className="flex items-center justify-between pt-1 text-xs">
+                  <span className="text-[11px] text-muted-foreground">
+                    {new Date(p.createdAt || p.date).toLocaleDateString()}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedPrompt(p)}
+                      className="h-8 text-xs font-medium"
+                    >
+                      Review
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`Delete prompt ${p.title}`}
+                      onClick={() => handleDelete(p._id)}
+                      className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
 
-                    <td className="p-4">
-                      <p className="font-medium text-foreground">{p.authorName || 'User'}</p>
-                      <p className="text-muted-foreground text-[11px]">{p.authorEmail || 'N/A'}</p>
-                    </td>
-
-                    <td className="p-4">
-                      <Badge
-                        variant={
-                          p.status === 'published' || p.status === 'approved'
-                            ? 'default'
-                            : p.status === 'pending'
-                            ? 'secondary'
-                            : p.status === 'rejected'
-                            ? 'destructive'
-                            : 'outline'
-                        }
-                        className="capitalize text-[10px]"
-                      >
-                        {p.status}
-                      </Badge>
-                    </td>
-
-                    <td className="p-4 text-muted-foreground whitespace-nowrap">
-                      {new Date(p.createdAt || p.date).toLocaleDateString()}
-                    </td>
-
-                    <td className="p-4 text-right whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setSelectedPrompt(p)}
-                          className="h-8 text-xs font-medium"
-                        >
-                          Review
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(p._id)}
-                          className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                          title="Delete Prompt"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
+          {/* Desktop Table View (>= 640px) */}
+          <div className="hidden sm:block rounded-xl border border-border bg-card overflow-hidden shadow-xs">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-muted/50 border-b border-border text-muted-foreground uppercase tracking-wider font-semibold">
+                  <tr>
+                    <th className="p-4">Prompt Info</th>
+                    <th className="p-4">Author</th>
+                    <th className="p-4">Status</th>
+                    <th className="p-4">Date</th>
+                    <th className="p-4 text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-border/60">
+                  {prompts.map((p) => (
+                    <tr key={p._id} className="hover:bg-muted/30 transition-colors">
+                      <td className="p-4 max-w-xs">
+                        <p className="font-semibold text-foreground truncate text-sm">{p.title}</p>
+                        <p className="text-muted-foreground line-clamp-1 font-mono text-[11px] mt-0.5">
+                          {p.prompt}
+                        </p>
+                      </td>
+
+                      <td className="p-4">
+                        <p className="font-medium text-foreground">{p.authorName || 'User'}</p>
+                        <p className="text-muted-foreground text-[11px]">{p.authorEmail || 'N/A'}</p>
+                      </td>
+
+                      <td className="p-4">
+                        <Badge
+                          variant={
+                            p.status === 'published' || p.status === 'approved'
+                              ? 'default'
+                              : p.status === 'pending'
+                              ? 'secondary'
+                              : p.status === 'rejected'
+                              ? 'destructive'
+                              : 'outline'
+                          }
+                          className="capitalize text-[10px]"
+                        >
+                          {p.status}
+                        </Badge>
+                      </td>
+
+                      <td className="p-4 text-muted-foreground whitespace-nowrap">
+                        {new Date(p.createdAt || p.date).toLocaleDateString()}
+                      </td>
+
+                      <td className="p-4 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedPrompt(p)}
+                            className="h-8 text-xs font-medium"
+                          >
+                            Review
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label={`Delete prompt ${p.title}`}
+                            onClick={() => handleDelete(p._id)}
+                            className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                            title="Delete Prompt"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}

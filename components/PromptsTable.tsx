@@ -115,6 +115,7 @@ export default function PromptsTable({
                     onClick={() => onEdit(prompt)}
                     variant="ghost"
                     size="icon"
+                    aria-label={`Edit prompt ${prompt.title}`}
                     className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
                   >
                     <Edit2 className="w-4 h-4" />
@@ -123,6 +124,7 @@ export default function PromptsTable({
                     onClick={() => onDelete(prompt._id!)}
                     variant="ghost"
                     size="icon"
+                    aria-label={`Delete prompt ${prompt.title}`}
                     className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                   >
                     <Trash2 className="w-4 h-4" />

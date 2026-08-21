@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 
+import { Skeleton } from '@/components/ui/skeleton';
+
 interface PromptItem {
   _id: string;
   title: string;
@@ -137,9 +139,15 @@ export default function ExplorePage() {
 
         {/* Prompt Grid */}
         {loading ? (
-          <div className="py-24 text-center text-sm text-muted-foreground animate-pulse flex items-center justify-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary animate-spin" />
-            Loading AI artwork prompts...
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="rounded-2xl border border-border/80 bg-card overflow-hidden space-y-3 p-4">
+                <Skeleton className="aspect-[4/3] w-full rounded-xl" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-8 w-full rounded-lg" />
+              </div>
+            ))}
           </div>
         ) : prompts.length === 0 ? (
           <div className="py-20 text-center rounded-2xl border border-border bg-card p-12 space-y-3">
@@ -153,8 +161,17 @@ export default function ExplorePage() {
             {prompts.map((p) => (
               <div
                 key={p._id}
+                role="button"
+                tabIndex={0}
                 onClick={() => setSelectedPrompt(p)}
-                className="group relative flex flex-col overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xs hover:shadow-xl hover:border-primary/50 transition-all cursor-pointer"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setSelectedPrompt(p);
+                  }
+                }}
+                aria-label={`View details for prompt ${p.title}`}
+                className="group relative flex flex-col overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xs hover:shadow-xl hover:border-primary/50 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-hidden"
               >
                 {/* Image Container */}
                 <div className="relative aspect-[4/3] w-full overflow-hidden bg-secondary/30">

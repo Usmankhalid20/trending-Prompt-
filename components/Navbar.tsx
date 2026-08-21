@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Menu, X, LayoutDashboard } from 'lucide-react';
+import { Menu, X, LayoutDashboard, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -31,311 +33,135 @@ export default function Navbar() {
 
   return (
     <header
-      style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 50,
-        backgroundColor: scrolled
-          ? 'rgba(20,18,26,0.88)'
-          : 'rgba(20,18,26,0.72)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        borderBottom: `1px solid ${scrolled ? '#37324A' : 'transparent'}`,
-        transition: 'background-color 0.25s, border-color 0.25s',
-      }}
+      className={`sticky top-0 z-50 transition-all duration-200 backdrop-blur-md border-b ${
+        scrolled
+          ? 'bg-background/90 border-border shadow-xs'
+          : 'bg-background/70 border-transparent'
+      }`}
     >
-      <div
-        style={{
-          maxWidth: 1200,
-          margin: '0 auto',
-          padding: '0 24px',
-          height: 64,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        
         {/* ── Logo ── */}
         <Link
           href="/"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            textDecoration: 'none',
-          }}
+          className="flex items-center gap-2.5 group text-decoration-none focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary rounded-lg p-1"
         >
-          {/* Sprocket icon mark */}
-          <span
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 34,
-              height: 34,
-              borderRadius: 8,
-              background: 'linear-gradient(135deg,#FF6B4A,#e85a39)',
-              flexShrink: 0,
-            }}
-            aria-hidden="true"
-          >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <rect x="1" y="4" width="2" height="2" rx="0.5" fill="white" opacity="0.9" />
-              <rect x="1" y="8" width="2" height="2" rx="0.5" fill="white" opacity="0.9" />
-              <rect x="1" y="12" width="2" height="2" rx="0.5" fill="white" opacity="0.9" />
-              <rect x="15" y="4" width="2" height="2" rx="0.5" fill="white" opacity="0.9" />
-              <rect x="15" y="8" width="2" height="2" rx="0.5" fill="white" opacity="0.9" />
-              <rect x="15" y="12" width="2" height="2" rx="0.5" fill="white" opacity="0.9" />
-              <rect x="4" y="3" width="10" height="12" rx="1.5" fill="white" opacity="0.15" />
-              <rect x="5" y="4.5" width="8" height="9" rx="1" fill="white" opacity="0.25" />
-            </svg>
+          <span className="flex items-center justify-center w-8.5 h-8.5 rounded-xl bg-primary text-primary-foreground shadow-xs group-hover:scale-105 transition-transform">
+            <Sparkles className="w-4.5 h-4.5" />
           </span>
-          <span
-            style={{
-              fontFamily: 'var(--font-display, "Space Grotesk", sans-serif)',
-              fontWeight: 700,
-              fontSize: 17,
-              color: '#EDE9F7',
-              letterSpacing: '-0.01em',
-            }}
-          >
+          <span className="font-display font-bold text-lg tracking-tight text-foreground">
             AI Prompt Hub
           </span>
         </Link>
 
-        {/* ── Desktop nav ── */}
+        {/* ── Desktop Nav Links ── */}
         <nav
           aria-label="Main navigation"
-          style={{ display: 'flex', alignItems: 'center', gap: 4 }}
-          className="hidden-mobile"
+          className="hidden md:flex items-center gap-1"
         >
-          <style>{`
-            @media (max-width: 719px) { .hidden-mobile { display: none !important; } }
-            @media (min-width: 720px) { .show-mobile   { display: none !important; } }
-          `}</style>
           {navLinks.map((l) => (
             <Link
               key={l.href}
               href={l.href}
-              style={{
-                fontFamily: 'var(--font-sans, "IBM Plex Sans", sans-serif)',
-                fontSize: 14,
-                fontWeight: 500,
-                color: '#A79FC4',
-                textDecoration: 'none',
-                padding: '6px 14px',
-                borderRadius: 8,
-                transition: 'color 0.15s, background 0.15s',
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.color = '#EDE9F7';
-                (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(237,233,247,0.06)';
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.color = '#A79FC4';
-                (e.currentTarget as HTMLAnchorElement).style.background = 'transparent';
-              }}
+              className="px-3.5 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
             >
               {l.label}
             </Link>
           ))}
         </nav>
 
-        {/* ── Desktop auth actions ── */}
-        <div
-          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
-          className="hidden-mobile"
-        >
+        {/* ── Desktop Auth Actions + Theme Toggle ── */}
+        <div className="hidden md:flex items-center gap-2.5">
           {user ? (
-            <Link
-              href={
-                user.role === 'user'    ? '/dashboard' :
-                user.role === 'creator' ? '/creator'   : '/admin'
-              }
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                fontFamily: 'var(--font-sans, sans-serif)', fontSize: 14, fontWeight: 600,
-                color: '#14121A', background: '#FF6B4A', padding: '7px 16px',
-                borderRadius: 8, textDecoration: 'none',
-                transition: 'background 0.15s, transform 0.15s',
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.background = '#e85a39';
-                (e.currentTarget as HTMLAnchorElement).style.transform = 'translateY(-1px)';
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.background = '#FF6B4A';
-                (e.currentTarget as HTMLAnchorElement).style.transform = 'translateY(0)';
-              }}
-            >
-              <LayoutDashboard size={14} />
-              {user.role === 'user' ? 'User Portal' : user.role === 'creator' ? 'Creator Studio' : 'Admin Portal'}
+            <Link href={
+              user.role === 'user' ? '/dashboard' :
+              user.role === 'creator' ? '/creator' : '/admin'
+            }>
+              <Button size="sm" className="gap-2 font-semibold shadow-xs">
+                <LayoutDashboard className="h-4 w-4" />
+                {user.role === 'user' ? 'User Portal' : user.role === 'creator' ? 'Creator Studio' : 'Admin Portal'}
+              </Button>
             </Link>
           ) : (
             <>
-              <Link
-                href="/login"
-                id="nav-login"
-                style={{
-                  fontFamily: 'var(--font-sans, sans-serif)',
-                  fontSize: 14,
-                  fontWeight: 500,
-                  color: '#A79FC4',
-                  textDecoration: 'none',
-                  padding: '7px 14px',
-                  borderRadius: 8,
-                  transition: 'color 0.15s',
-                }}
-                onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = '#EDE9F7')}
-                onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = '#A79FC4')}
-              >
-                Log In
+              <Link href="/login" id="nav-login">
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                  Log In
+                </Button>
               </Link>
-              <Link
-                href="/register"
-                id="nav-get-started"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  fontFamily: 'var(--font-sans, sans-serif)',
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: '#14121A',
-                  background: '#FF6B4A',
-                  padding: '7px 16px',
-                  borderRadius: 8,
-                  textDecoration: 'none',
-                  transition: 'background 0.15s, transform 0.15s',
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLAnchorElement).style.background = '#e85a39';
-                  (e.currentTarget as HTMLAnchorElement).style.transform = 'translateY(-1px)';
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLAnchorElement).style.background = '#FF6B4A';
-                  (e.currentTarget as HTMLAnchorElement).style.transform = 'translateY(0)';
-                }}
-              >
-                Get Started
+              <Link href="/register" id="nav-get-started">
+                <Button size="sm" className="font-semibold shadow-xs">
+                  Get Started
+                </Button>
               </Link>
             </>
           )}
+
+          <div className="pl-1 border-l border-border/60">
+            <ThemeToggle />
+          </div>
         </div>
 
-        {/* ── Hamburger (mobile) ── */}
-        <button
-          id="nav-hamburger"
-          aria-label="Open menu"
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen((v) => !v)}
-          className="show-mobile"
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            color: '#EDE9F7',
-            padding: 6,
-            borderRadius: 8,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          {menuOpen ? <X size={22} /> : <Menu size={22} />}
-        </button>
+        {/* ── Mobile Menu Control & Theme Toggle ── */}
+        <div className="flex md:hidden items-center gap-2">
+          <ThemeToggle />
+          <Button
+            id="nav-hamburger"
+            variant="ghost"
+            size="icon"
+            aria-label="Open menu"
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((v) => !v)}
+          >
+            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
+        </div>
       </div>
 
-      {/* ── Mobile menu ── */}
+      {/* ── Mobile Dropdown Menu ── */}
       {menuOpen && (
-        <div
-          style={{
-            background: 'rgba(20,18,26,0.97)',
-            borderTop: '1px solid #37324A',
-            padding: '16px 24px 24px',
-          }}
-          className="show-mobile"
-        >
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div className="md:hidden border-b border-border bg-card/95 backdrop-blur-xl px-4 pt-3 pb-6 space-y-3">
+          <nav className="flex flex-col space-y-1">
             {navLinks.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
                 onClick={() => setMenuOpen(false)}
-                style={{
-                  fontFamily: 'var(--font-sans, sans-serif)',
-                  fontSize: 15,
-                  fontWeight: 500,
-                  color: '#A79FC4',
-                  textDecoration: 'none',
-                  padding: '10px 12px',
-                  borderRadius: 8,
-                }}
+                className="px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
               >
                 {l.label}
               </Link>
             ))}
-            <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {user ? (
-                <Link
-                  href={
-                    user.role === 'user'    ? '/dashboard' :
-                    user.role === 'creator' ? '/creator'   : '/admin'
-                  }
-                  onClick={() => setMenuOpen(false)}
-                  style={{
-                    textAlign: 'center',
-                    fontFamily: 'var(--font-sans, sans-serif)',
-                    fontWeight: 600,
-                    fontSize: 14,
-                    color: '#14121A',
-                    background: '#FF6B4A',
-                    padding: '10px 16px',
-                    borderRadius: 8,
-                    textDecoration: 'none',
-                  }}
-                >
-                  {user.role === 'user' ? 'User Portal' : user.role === 'creator' ? 'Creator Studio' : 'Admin Portal'}
-                </Link>
-              ) : (
-                <>
-                  <Link
-                    href="/login"
-                    onClick={() => setMenuOpen(false)}
-                    style={{
-                      textAlign: 'center',
-                      fontFamily: 'var(--font-sans, sans-serif)',
-                      fontWeight: 500,
-                      fontSize: 14,
-                      color: '#A79FC4',
-                      border: '1px solid #37324A',
-                      padding: '10px 16px',
-                      borderRadius: 8,
-                      textDecoration: 'none',
-                    }}
-                  >
-                    Log In
-                  </Link>
-                  <Link
-                    href="/register"
-                    onClick={() => setMenuOpen(false)}
-                    style={{
-                      textAlign: 'center',
-                      fontFamily: 'var(--font-sans, sans-serif)',
-                      fontWeight: 600,
-                      fontSize: 14,
-                      color: '#14121A',
-                      background: '#FF6B4A',
-                      padding: '10px 16px',
-                      borderRadius: 8,
-                      textDecoration: 'none',
-                    }}
-                  >
-                    Get Started
-                  </Link>
-                </>
-              )}
-            </div>
           </nav>
+          <div className="pt-2 border-t border-border/60 flex flex-col space-y-2">
+            {user ? (
+              <Link
+                href={
+                  user.role === 'user' ? '/dashboard' :
+                  user.role === 'creator' ? '/creator' : '/admin'
+                }
+                onClick={() => setMenuOpen(false)}
+              >
+                <Button className="w-full gap-2 font-semibold">
+                  <LayoutDashboard className="h-4 w-4" />
+                  {user.role === 'user' ? 'User Portal' : user.role === 'creator' ? 'Creator Studio' : 'Admin Portal'}
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" onClick={() => setMenuOpen(false)}>
+                  <Button variant="outline" className="w-full">
+                    Log In
+                  </Button>
+                </Link>
+                <Link href="/register" onClick={() => setMenuOpen(false)}>
+                  <Button className="w-full font-semibold">
+                    Get Started
+                  </Button>
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       )}
     </header>

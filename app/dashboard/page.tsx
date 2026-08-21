@@ -259,8 +259,15 @@ export default function UserDashboardPage() {
 
       {/* Prompts Grid */}
       {loading ? (
-        <div className="py-20 text-center text-sm text-muted-foreground animate-pulse">
-          Loading approved community prompts...
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="rounded-2xl border border-border bg-card p-4 space-y-3">
+              <div className="aspect-4/3 w-full bg-muted/60 animate-pulse rounded-xl" />
+              <div className="h-4 w-3/4 bg-muted/60 animate-pulse rounded-xs" />
+              <div className="h-3 w-full bg-muted/60 animate-pulse rounded-xs" />
+              <div className="h-8 w-full bg-muted/60 animate-pulse rounded-lg" />
+            </div>
+          ))}
         </div>
       ) : filteredPrompts.length === 0 ? (
         <div className="rounded-2xl border border-border bg-card p-12 text-center space-y-3">
@@ -269,13 +276,22 @@ export default function UserDashboardPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredPrompts.map((p) => {
+          {filteredPrompts.map((p, index) => {
             const id = p._id || p.id;
             return (
               <div
                 key={id}
+                role="button"
+                tabIndex={0}
                 onClick={() => setSelectedPrompt(p)}
-                className="group rounded-2xl border border-border bg-card overflow-hidden shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between cursor-pointer"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setSelectedPrompt(p);
+                  }
+                }}
+                aria-label={`View details for prompt ${p.title}`}
+                className="group rounded-2xl border border-border bg-card overflow-hidden shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-hidden"
               >
                 {/* Image Section */}
                 <div className="relative aspect-4/3 w-full bg-secondary/40 overflow-hidden">
@@ -283,6 +299,8 @@ export default function UserDashboardPage() {
                     src={p.image || '/placeholder-prompt.png'}
                     alt={p.title}
                     fill
+                    priority={index < 3}
+                    loading={index < 3 ? 'eager' : 'lazy'}
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                     unoptimized
                   />
