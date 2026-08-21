@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Save, Send, Loader2, AlertCircle, Upload, Trash2, Image as ImageIcon } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 
 const CATEGORIES = ['Couple Portraits', 'Editorial / Dress', 'Fantasy Scenes', 'Architecture', 'Abstract', 'Nature', 'General'];
 
@@ -75,7 +78,7 @@ export default function PromptForm({
         }
       }
 
-      // Fallback to FileReader base64 if server upload endpoint fails or Cloudinary is unset
+      // Fallback to FileReader base64
       const reader = new FileReader();
       reader.onload = () => {
         if (reader.result) {
@@ -84,7 +87,6 @@ export default function PromptForm({
       };
       reader.readAsDataURL(file);
     } catch (err: any) {
-      // FileReader fallback
       const reader = new FileReader();
       reader.onload = () => {
         if (reader.result) {
@@ -113,30 +115,20 @@ export default function PromptForm({
     }
   };
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%', background: '#14121A', border: '1px solid #37324A',
-    borderRadius: 8, padding: '9px 12px', color: '#EDE9F7',
-    fontFamily: 'var(--font-sans,sans-serif)', fontSize: 14, outline: 'none',
-    boxSizing: 'border-box',
-  };
-  const labelStyle: React.CSSProperties = {
-    display: 'block', fontFamily: 'var(--font-mono,monospace)', fontSize: 11,
-    fontWeight: 600, letterSpacing: '0.08em', color: '#A79FC4',
-    marginBottom: 6, textTransform: 'uppercase',
-  };
-
   return (
-    <div style={{ maxWidth: 760, display: 'flex', flexDirection: 'column', gap: 24 }}>
-      {/* Back + heading */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <Link href={backHref} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 8, border: '1px solid #37324A', color: '#A79FC4', textDecoration: 'none', flexShrink: 0 }}>
-          <ArrowLeft size={16} />
+    <div className="max-w-3xl space-y-6">
+      {/* Back + Header */}
+      <div className="flex items-center gap-3">
+        <Link href={backHref}>
+          <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
         </Link>
         <div>
-          <h1 style={{ fontFamily: 'var(--font-display,sans-serif)', fontWeight: 700, fontSize: 22, color: '#EDE9F7', margin: 0 }}>
+          <h1 className="font-display font-bold text-2xl text-foreground">
             {initial.title ? 'Edit Prompt' : 'Create Prompt'}
           </h1>
-          <p style={{ fontFamily: 'var(--font-sans,sans-serif)', fontSize: 13, color: '#A79FC4', margin: '3px 0 0' }}>
+          <p className="text-xs text-muted-foreground mt-0.5">
             Upload sample artwork, save as draft, or submit for admin review.
           </p>
         </div>
@@ -144,91 +136,111 @@ export default function PromptForm({
 
       {/* Rejection notice */}
       {rejectionReason && (
-        <div style={{ display: 'flex', gap: 10, background: 'rgba(255,107,74,0.08)', border: '1px solid rgba(255,107,74,0.25)', borderRadius: 10, padding: '12px 16px' }}>
-          <AlertCircle size={16} color="#FF6B4A" style={{ flexShrink: 0, marginTop: 1 }} />
-          <div>
-            <p style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, fontWeight: 600, color: '#FF6B4A', margin: '0 0 4px', letterSpacing: '0.06em' }}>REJECTION REASON</p>
-            <p style={{ fontFamily: 'var(--font-sans,sans-serif)', fontSize: 13, color: '#EDE9F7', margin: 0 }}>{rejectionReason}</p>
+        <div className="flex gap-3 bg-destructive/10 border border-destructive/25 rounded-xl p-4 text-xs">
+          <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <p className="font-mono font-semibold text-destructive uppercase tracking-wider text-[10px]">
+              REJECTION REASON
+            </p>
+            <p className="text-foreground">{rejectionReason}</p>
           </div>
         </div>
       )}
 
       {/* Read-only notice */}
       {readonlyNotice && (
-        <div style={{ background: 'rgba(131,230,201,0.07)', border: '1px solid rgba(131,230,201,0.2)', borderRadius: 10, padding: '12px 16px' }}>
-          <p style={{ fontFamily: 'var(--font-sans,sans-serif)', fontSize: 13, color: '#83E6C9', margin: 0 }}>{readonlyNotice}</p>
+        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 text-xs text-emerald-400">
+          {readonlyNotice}
         </div>
       )}
 
-      {/* Error */}
+      {/* Error Notice */}
       {error && (
-        <div style={{ background: 'rgba(255,107,74,0.08)', border: '1px solid rgba(255,107,74,0.2)', borderRadius: 10, padding: '12px 16px' }}>
-          <p style={{ fontFamily: 'var(--font-sans,sans-serif)', fontSize: 13, color: '#FF6B4A', margin: 0 }}>{error}</p>
+        <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 text-xs text-destructive font-medium">
+          {error}
         </div>
       )}
 
-      {/* Form card */}
-      <div style={{ background: '#1D1926', border: '1px solid #37324A', borderRadius: 14, padding: 28, display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Form Card */}
+      <div className="bg-card border border-border/80 rounded-2xl p-6 sm:p-8 space-y-5 shadow-xs">
+        
         {/* Title */}
-        <div>
-          <label htmlFor="pf-title" style={labelStyle}>Title</label>
-          <input id="pf-title" style={inputStyle} placeholder="e.g. Twilight Couple Portrait" value={values.title} onChange={set('title')} disabled={readonly} required />
+        <div className="space-y-2">
+          <label htmlFor="pf-title" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-mono">
+            Title
+          </label>
+          <Input
+            id="pf-title"
+            placeholder="e.g. Twilight Couple Portrait"
+            value={values.title}
+            onChange={set('title')}
+            disabled={readonly}
+            required
+          />
         </div>
 
         {/* Category */}
-        <div>
-          <label htmlFor="pf-cat" style={labelStyle}>Category</label>
-          <select id="pf-cat" style={{ ...inputStyle, appearance: 'none' }} value={values.category} onChange={set('category')} disabled={readonly}>
-            {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
+        <div className="space-y-2">
+          <label htmlFor="pf-cat" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-mono">
+            Category
+          </label>
+          <select
+            id="pf-cat"
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 text-foreground"
+            value={values.category}
+            onChange={set('category')}
+            disabled={readonly}
+          >
+            {CATEGORIES.map((c) => (
+              <option key={c} value={c} className="bg-card text-foreground">
+                {c}
+              </option>
+            ))}
           </select>
         </div>
 
         {/* Image Upload Field */}
-        <div>
-          <label style={labelStyle}>Prompt Sample Artwork Image</label>
+        <div className="space-y-2">
+          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-mono">
+            Prompt Sample Artwork Image
+          </label>
           {values.image ? (
-            <div style={{ position: 'relative', width: '100%', maxHeight: 280, borderRadius: 10, overflow: 'hidden', border: '1px solid #37324A', background: '#14121A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="relative w-full max-h-72 rounded-xl overflow-hidden border border-border bg-background flex items-center justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={values.image} alt="Prompt Artwork Preview" style={{ width: '100%', maxHeight: 280, objectFit: 'contain' }} />
+              <img src={values.image} alt="Prompt Artwork Preview" className="max-h-72 object-contain w-full" />
               {!readonly && (
-                <button
+                <Button
                   type="button"
+                  size="sm"
+                  variant="destructive"
                   onClick={() => setValues((v) => ({ ...v, image: '' }))}
-                  style={{
-                    position: 'absolute', top: 12, right: 12,
-                    background: 'rgba(239,68,68,0.9)', border: 'none', borderRadius: 6,
-                    padding: 8, cursor: 'pointer', color: '#FFF', display: 'flex', alignItems: 'center', gap: 6,
-                    fontFamily: 'var(--font-sans,sans-serif)', fontSize: 12, fontWeight: 600,
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-                  }}
+                  className="absolute top-3 right-3 gap-1.5 shadow-md"
                 >
-                  <Trash2 size={14} />
+                  <Trash2 className="h-3.5 w-3.5" />
                   Remove Image
-                </button>
+                </Button>
               )}
             </div>
           ) : (
-            <div style={{ position: 'relative' }}>
+            <div className="relative">
               <label
                 htmlFor="pf-image-file"
-                style={{
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10,
-                  padding: '32px 20px', borderRadius: 10, border: '2px dashed #37324A', background: '#14121A',
-                  cursor: readonly || uploading ? 'not-allowed' : 'pointer', transition: 'border-color 0.15s, background 0.15s',
-                }}
+                className={`flex flex-col items-center justify-center gap-2.5 p-8 rounded-xl border-2 border-dashed border-border/80 bg-background/50 transition-colors ${
+                  readonly || uploading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:border-primary/50'
+                }`}
               >
                 {uploading ? (
-                  <Loader2 size={24} className="animate-spin" style={{ color: '#FF6B4A' }} />
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 ) : (
-                  <div style={{ width: 44, height: 44, borderRadius: 10, background: '#262131', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #37324A' }}>
-                    <Upload size={20} color="#FF6B4A" />
+                  <div className="h-10 w-10 rounded-xl bg-secondary flex items-center justify-center border border-border">
+                    <Upload className="h-5 w-5 text-primary" />
                   </div>
                 )}
-                <div style={{ textAlign: 'center' }}>
-                  <p style={{ fontFamily: 'var(--font-sans,sans-serif)', fontSize: 14, fontWeight: 600, color: '#EDE9F7', margin: '0 0 2px 0' }}>
+                <div className="text-center">
+                  <p className="text-sm font-semibold text-foreground">
                     {uploading ? 'Uploading image...' : 'Click or Drag image to upload artwork sample'}
                   </p>
-                  <p style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, color: '#A79FC4', margin: 0 }}>
+                  <p className="text-xs text-muted-foreground font-mono mt-0.5">
                     Supports PNG, JPG, WEBP, GIF
                   </p>
                 </div>
@@ -240,20 +252,22 @@ export default function PromptForm({
                   accept="image/*"
                   onChange={handleImageUpload}
                   disabled={uploading}
-                  style={{ display: 'none' }}
+                  className="hidden"
                 />
               )}
             </div>
           )}
         </div>
 
-        {/* Prompt content */}
-        <div>
-          <label htmlFor="pf-prompt" style={labelStyle}>Prompt Content</label>
-          <textarea
+        {/* Prompt Content Payload */}
+        <div className="space-y-2">
+          <label htmlFor="pf-prompt" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-mono">
+            Prompt Content Payload
+          </label>
+          <Textarea
             id="pf-prompt"
-            rows={6}
-            style={{ ...inputStyle, fontFamily: 'var(--font-mono,monospace)', fontSize: 12, lineHeight: 1.6, resize: 'vertical' }}
+            rows={5}
+            className="font-mono text-xs leading-relaxed"
             placeholder="/imagine prompt: cinematic twilight couple portrait, golden hour backlight --ar 16:9 --v 6 --stylize 750"
             value={values.prompt}
             onChange={set('prompt')}
@@ -263,51 +277,58 @@ export default function PromptForm({
         </div>
 
         {/* Description */}
-        <div>
-          <label htmlFor="pf-desc" style={labelStyle}>Description <span style={{ fontWeight: 400, textTransform: 'none' }}>(optional)</span></label>
-          <textarea id="pf-desc" rows={3} style={{ ...inputStyle, resize: 'vertical' }} placeholder="Brief description of the style or mood..." value={values.description} onChange={set('description')} disabled={readonly} />
+        <div className="space-y-2">
+          <label htmlFor="pf-desc" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-mono">
+            Description <span className="text-muted-foreground/60 font-normal lowercase">(optional)</span>
+          </label>
+          <Textarea
+            id="pf-desc"
+            rows={3}
+            placeholder="Brief description of the visual style or mood..."
+            value={values.description}
+            onChange={set('description')}
+            disabled={readonly}
+          />
         </div>
 
         {/* Tags */}
-        <div>
-          <label htmlFor="pf-tags" style={labelStyle}>Tags <span style={{ fontWeight: 400, textTransform: 'none' }}>(comma-separated)</span></label>
-          <input id="pf-tags" style={inputStyle} placeholder="portrait, couple, golden hour" value={values.tags} onChange={set('tags')} disabled={readonly} />
+        <div className="space-y-2">
+          <label htmlFor="pf-tags" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-mono">
+            Tags <span className="text-muted-foreground/60 font-normal lowercase">(comma-separated)</span>
+          </label>
+          <Input
+            id="pf-tags"
+            placeholder="portrait, couple, golden hour"
+            value={values.tags}
+            onChange={set('tags')}
+            disabled={readonly}
+          />
         </div>
       </div>
 
-      {/* Actions */}
+      {/* Form Action Controls */}
       {!readonly && (
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-          <button
+        <div className="flex items-center justify-end gap-3 pt-2">
+          <Button
             type="button"
+            variant="outline"
             onClick={() => handleAction(false)}
             disabled={loading || uploading}
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              fontFamily: 'var(--font-sans,sans-serif)', fontWeight: 600, fontSize: 14,
-              padding: '9px 20px', borderRadius: 8, cursor: 'pointer',
-              background: 'transparent', border: '1px solid #37324A', color: '#A79FC4',
-              transition: 'border-color 0.15s, color 0.15s',
-            }}
+            className="gap-2 font-semibold"
           >
-            {loading ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             Save Draft
-          </button>
-          <button
+          </Button>
+
+          <Button
             type="button"
             onClick={() => handleAction(true)}
             disabled={loading || uploading}
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              fontFamily: 'var(--font-sans,sans-serif)', fontWeight: 600, fontSize: 14,
-              padding: '9px 20px', borderRadius: 8, cursor: 'pointer',
-              background: '#FF6B4A', border: 'none', color: '#14121A',
-              transition: 'background 0.15s',
-            }}
+            className="gap-2 font-semibold shadow-xs"
           >
-            {loading ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             {initial.title ? 'Resubmit for Review' : 'Submit for Review'}
-          </button>
+          </Button>
         </div>
       )}
     </div>

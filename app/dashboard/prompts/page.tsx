@@ -63,7 +63,7 @@ export default function MySavedPromptsPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {prompts.map((p) => {
+          {prompts.map((p, index) => {
             const id = p._id || p.id;
             return (
               <div
@@ -77,6 +77,8 @@ export default function MySavedPromptsPage() {
                     src={p.image || '/placeholder-prompt.png'}
                     alt={p.title}
                     fill
+                    priority={index < 3}
+                    loading={index < 3 ? 'eager' : 'lazy'}
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                     unoptimized
                   />

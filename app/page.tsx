@@ -14,17 +14,9 @@ export const metadata: Metadata = {
 
 export default function Home() {
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: '#14121A',
-        color: '#EDE9F7',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Navbar />
-      <main style={{ flex: 1 }}>
+      <main className="flex-1">
         <Hero />
         <Features />
         <HowItWorks />
