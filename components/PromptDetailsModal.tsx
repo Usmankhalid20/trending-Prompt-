@@ -7,20 +7,27 @@ import Image from 'next/image';
 
 interface Prompt {
   _id?: string;
-  id: number;
+  id?: number;
   title: string;
-  image: string;
+  image?: string;
   prompt: string;
-  date: string;
+  date?: string;
+  createdAt?: string | Date;
+  aiModel?: string;
+  category?: string;
+  authorName?: string;
 }
 
 interface PromptDetailsModalProps {
   prompt: Prompt;
+  isOpen?: boolean;
   onClose: () => void;
 }
 
-export default function PromptDetailsModal({ prompt, onClose }: PromptDetailsModalProps) {
+export default function PromptDetailsModal({ prompt, isOpen = true, onClose }: PromptDetailsModalProps) {
   const [isCopied, setIsCopied] = useState(false);
+
+  if (isOpen === false) return null;
 
   const handleCopyPrompt = () => {
     navigator.clipboard.writeText(prompt.prompt);
@@ -49,6 +56,7 @@ export default function PromptDetailsModal({ prompt, onClose }: PromptDetailsMod
         {/* Close Button */}
         <button
           onClick={onClose}
+          aria-label="Close dialog"
           className="absolute top-4 right-4 z-10 p-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full transition-all hover:rotate-90 text-white md:text-foreground md:bg-secondary/50 md:hover:bg-secondary"
         >
           <X className="w-6 h-6" />
@@ -57,7 +65,7 @@ export default function PromptDetailsModal({ prompt, onClose }: PromptDetailsMod
         {/* Left Side - Image */}
         <div className="flex-1 bg-secondary/30 min-h-[300px] md:min-h-full relative overflow-hidden">
           <Image
-            src={prompt.image}
+            src={prompt.image || '/placeholder-prompt.png'}
             alt={prompt.title}
             fill
             className="object-cover w-full h-full"
@@ -78,7 +86,7 @@ export default function PromptDetailsModal({ prompt, onClose }: PromptDetailsMod
             </h2>
             <div className="flex items-center gap-2 text-sm text-muted-foreground pt-1">
               <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-              Added {formatDate(prompt.date)}
+              Added {formatDate(prompt.date || String(prompt.createdAt || ''))}
             </div>
           </div>
 

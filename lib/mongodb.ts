@@ -1,7 +1,7 @@
-import { MongoClient, type MongoClientOptions } from 'mongodb';
+import { MongoClient, type MongoClientOptions } from "mongodb";
 
 if (!process.env.MONGODB_URI) {
-  throw new Error('Please add your Mongo URI to .env.local');
+  throw new Error("Please add your Mongo URI to .env.local");
 }
 
 const uri = process.env.MONGODB_URI;
@@ -28,8 +28,8 @@ async function connectMongo() {
   }
 }
 
-export async function getMongoClient() {
-  if (process.env.NODE_ENV === 'development') {
+export async function getMongoClient(): Promise<MongoClient> {
+  if (process.env.NODE_ENV === "development") {
     if (global._mongoClient) {
       return global._mongoClient;
     }
@@ -51,3 +51,6 @@ export async function getMongoClient() {
 
   return connectMongo();
 }
+
+const clientPromise = getMongoClient();
+export default clientPromise;
