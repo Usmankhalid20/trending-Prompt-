@@ -2,24 +2,26 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { PlusCircle, FileText, Clock, CheckCircle2, XCircle, FileEdit, ArrowRight } from 'lucide-react';
+import { PlusCircle, FileText, Clock, CheckCircle2, XCircle, FileEdit, ArrowRight, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 type Stats = { total: number; drafts: number; pending: number; approved: number; rejected: number };
 
 const STAT_CARDS = [
-  { key: 'total',    label: 'Total Prompts',    color: '#A79FC4', Icon: FileText },
-  { key: 'drafts',   label: 'Drafts',           color: '#A79FC4', Icon: FileEdit },
-  { key: 'pending',  label: 'Pending Review',   color: '#f0a45d', Icon: Clock },
-  { key: 'approved', label: 'Approved',         color: '#83E6C9', Icon: CheckCircle2 },
-  { key: 'rejected', label: 'Rejected',         color: '#FF6B4A', Icon: XCircle },
+  { key: 'total',    label: 'Total Prompts',    iconColor: 'text-muted-foreground', Icon: FileText },
+  { key: 'drafts',   label: 'Drafts',           iconColor: 'text-muted-foreground', Icon: FileEdit },
+  { key: 'pending',  label: 'Pending Review',   iconColor: 'text-amber-500',        Icon: Clock },
+  { key: 'approved', label: 'Approved',         iconColor: 'text-emerald-500',      Icon: CheckCircle2 },
+  { key: 'rejected', label: 'Rejected',         iconColor: 'text-rose-500',         Icon: XCircle },
 ] as const;
 
-const STATUS_COLOR: Record<string, string> = {
-  draft:    '#A79FC4',
-  pending:  '#f0a45d',
-  approved: '#83E6C9',
-  rejected: '#FF6B4A',
-  published:'#83E6C9',
+const STATUS_BADGE_STYLE: Record<string, string> = {
+  draft:    'bg-muted/50 text-muted-foreground border-border',
+  pending:  'bg-amber-500/10 text-amber-500 border-amber-500/30',
+  approved: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30',
+  rejected: 'bg-rose-500/10 text-rose-500 border-rose-500/30',
+  published:'bg-emerald-500/10 text-emerald-500 border-emerald-500/30',
 };
 
 export default function CreatorDashboardPage() {
@@ -42,74 +44,86 @@ export default function CreatorDashboardPage() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
-
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, paddingBottom: 24, borderBottom: '1px solid #37324A' }}>
+    <div className="space-y-8">
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-6">
         <div>
-          <h1 style={{ fontFamily: 'var(--font-display,sans-serif)', fontWeight: 700, fontSize: 28, color: '#EDE9F7', margin: 0, letterSpacing: '-0.02em' }}>
-            Dashboard
+          <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-foreground tracking-tight">
+            Creator Studio Dashboard
           </h1>
-          <p style={{ fontFamily: 'var(--font-sans,sans-serif)', fontSize: 14, color: '#A79FC4', margin: '4px 0 0' }}>
-            Track your prompt submissions and review statuses.
+          <p className="text-sm text-muted-foreground mt-1">
+            Track your prompt submissions, creation progress, and review statuses.
           </p>
         </div>
-        <Link
-          href="/creator/prompts/new"
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8,
-            fontFamily: 'var(--font-sans,sans-serif)', fontWeight: 600, fontSize: 14,
-            color: '#14121A', background: '#FF6B4A', padding: '9px 18px', borderRadius: 8,
-            textDecoration: 'none', transition: 'background 0.15s',
-          }}
-        >
-          <PlusCircle size={15} />
-          Create Prompt
+        <Link href="/creator/prompts/new">
+          <Button variant="default" className="gap-2 font-semibold shadow-xs">
+            <PlusCircle className="h-4 w-4" />
+            Create Prompt
+          </Button>
         </Link>
       </div>
 
-      {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', gap: 16 }}>
-        {STAT_CARDS.map(({ key, label, color, Icon }) => (
-          <div key={key} style={{ background: '#1D1926', border: '1px solid #37324A', borderRadius: 12, padding: '20px 20px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Icon size={16} color={color} />
-              <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, fontWeight: 600, color, letterSpacing: '0.06em' }}>{label.toUpperCase()}</span>
+      {/* Analytics Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        {STAT_CARDS.map(({ key, label, iconColor, Icon }) => (
+          <div
+            key={key}
+            className="rounded-2xl border border-border bg-card p-5 shadow-xs flex flex-col justify-between space-y-3"
+          >
+            <div className="flex items-center gap-2">
+              <Icon className={`h-4 w-4 ${iconColor}`} />
+              <span className="font-mono text-[11px] font-semibold text-muted-foreground tracking-wider uppercase">
+                {label}
+              </span>
             </div>
-            <p style={{ fontFamily: 'var(--font-display,sans-serif)', fontWeight: 700, fontSize: 32, color: '#EDE9F7', margin: 0, lineHeight: 1 }}>
+            <p className="font-display text-3xl font-black text-foreground leading-none">
               {stats[key]}
             </p>
           </div>
         ))}
       </div>
 
-      {/* Recent submissions */}
-      <div style={{ background: '#1D1926', border: '1px solid #37324A', borderRadius: 14, padding: 24 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <h2 style={{ fontFamily: 'var(--font-display,sans-serif)', fontWeight: 600, fontSize: 17, color: '#EDE9F7', margin: 0 }}>Recent Submissions</h2>
-          <Link href="/creator/prompts" style={{ fontFamily: 'var(--font-sans,sans-serif)', fontSize: 13, color: '#FF6B4A', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
-            View All <ArrowRight size={13} />
+      {/* Recent Submissions List */}
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-xs space-y-5">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display font-bold text-lg text-foreground">Recent Submissions</h2>
+          <Link
+            href="/creator/prompts"
+            className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1"
+          >
+            View All <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
 
         {loading ? (
-          <p style={{ fontFamily: 'var(--font-sans,sans-serif)', fontSize: 14, color: '#A79FC4', textAlign: 'center', padding: '32px 0' }}>Loading...</p>
+          <div className="py-12 flex items-center justify-center text-sm font-medium text-muted-foreground gap-2">
+            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+            Loading submissions...
+          </div>
         ) : prompts.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '40px 0' }}>
-            <p style={{ fontFamily: 'var(--font-sans,sans-serif)', fontSize: 14, color: '#A79FC4', marginBottom: 16 }}>No prompts yet.</p>
-            <Link href="/creator/prompts/new" style={{ fontFamily: 'var(--font-sans,sans-serif)', fontSize: 13, fontWeight: 600, color: '#FF6B4A' }}>Create your first prompt →</Link>
+          <div className="py-12 text-center space-y-3">
+            <p className="text-sm text-muted-foreground">No prompts submitted yet.</p>
+            <Link href="/creator/prompts/new">
+              <Button variant="outline" size="sm" className="font-semibold gap-1.5">
+                <PlusCircle className="h-3.5 w-3.5" /> Create your first prompt
+              </Button>
+            </Link>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div className="divide-y divide-border">
             {prompts.slice(0, 6).map((p) => (
-              <div key={p._id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #37324A', gap: 12 }}>
-                <div style={{ minWidth: 0 }}>
-                  <p style={{ fontFamily: 'var(--font-sans,sans-serif)', fontSize: 14, fontWeight: 600, color: '#EDE9F7', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.title}</p>
-                  <p style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, color: '#A79FC4', margin: '3px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.prompt}</p>
+              <div key={p._id} className="py-3.5 flex items-center justify-between gap-4">
+                <div className="min-w-0 flex-1 space-y-0.5">
+                  <p className="font-semibold text-sm text-foreground truncate">{p.title}</p>
+                  <p className="font-mono text-xs text-muted-foreground truncate">{p.prompt}</p>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-                  <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, fontWeight: 600, color: STATUS_COLOR[p.status] ?? '#A79FC4', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{p.status}</span>
-                  <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, color: '#A79FC4' }}>{new Date(p.createdAt).toLocaleDateString()}</span>
+                <div className="flex items-center gap-3 shrink-0">
+                  <Badge variant="outline" className={`text-[10px] uppercase font-mono font-semibold ${STATUS_BADGE_STYLE[p.status] || STATUS_BADGE_STYLE.draft}`}>
+                    {p.status}
+                  </Badge>
+                  <span className="font-mono text-xs text-muted-foreground hidden sm:inline">
+                    {new Date(p.createdAt).toLocaleDateString()}
+                  </span>
                 </div>
               </div>
             ))}

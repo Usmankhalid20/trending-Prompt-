@@ -3,16 +3,18 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { PlusCircle, Edit, Trash2, AlertCircle } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, AlertCircle, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 const TABS = ['all', 'draft', 'pending', 'approved', 'rejected'] as const;
 
-const STATUS_STYLE: Record<string, { color: string; bg: string }> = {
-  draft:    { color: '#A79FC4', bg: 'rgba(167,159,196,0.1)' },
-  pending:  { color: '#f0a45d', bg: 'rgba(240,164,93,0.1)' },
-  approved: { color: '#83E6C9', bg: 'rgba(131,230,201,0.1)' },
-  rejected: { color: '#FF6B4A', bg: 'rgba(255,107,74,0.1)' },
-  published:{ color: '#83E6C9', bg: 'rgba(131,230,201,0.1)' },
+const STATUS_BADGE_STYLE: Record<string, string> = {
+  draft:    'bg-muted/50 text-muted-foreground border-border',
+  pending:  'bg-amber-500/10 text-amber-500 border-amber-500/30',
+  approved: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30',
+  rejected: 'bg-rose-500/10 text-rose-500 border-rose-500/30',
+  published:'bg-emerald-500/10 text-emerald-500 border-emerald-500/30',
 };
 
 export default function CreatorPromptsPage() {
@@ -41,33 +43,31 @@ export default function CreatorPromptsPage() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, paddingBottom: 20, borderBottom: '1px solid #37324A' }}>
+    <div className="space-y-6">
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-5">
         <div>
-          <h1 style={{ fontFamily: 'var(--font-display,sans-serif)', fontWeight: 700, fontSize: 24, color: '#EDE9F7', margin: 0 }}>My Prompts</h1>
-          <p style={{ fontFamily: 'var(--font-sans,sans-serif)', fontSize: 13, color: '#A79FC4', margin: '4px 0 0' }}>Filter, edit, and track your submissions.</p>
+          <h1 className="font-display font-bold text-2xl text-foreground">My Submissions</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">Filter, edit, and track your prompt submissions.</p>
         </div>
-        <Link href="/creator/prompts/new" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontFamily: 'var(--font-sans,sans-serif)', fontWeight: 600, fontSize: 13, color: '#14121A', background: '#FF6B4A', padding: '8px 16px', borderRadius: 8, textDecoration: 'none' }}>
-          <PlusCircle size={14} /> Create Prompt
+        <Link href="/creator/prompts/new">
+          <Button variant="default" className="gap-2 font-semibold shadow-xs">
+            <PlusCircle className="h-4 w-4" /> Create Prompt
+          </Button>
         </Link>
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
         {TABS.map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            style={{
-              fontFamily: 'var(--font-mono,monospace)', fontSize: 11, fontWeight: 600,
-              letterSpacing: '0.07em', textTransform: 'uppercase', padding: '6px 14px',
-              borderRadius: 6, border: 'none', cursor: 'pointer',
-              background: tab === t ? '#FF6B4A22' : '#1D1926',
-              color: tab === t ? '#FF6B4A' : '#A79FC4',
-              borderBottom: tab === t ? '2px solid #FF6B4A' : '2px solid transparent',
-              transition: 'all 0.15s',
-            }}
+            className={`px-3.5 py-1.5 rounded-lg font-mono text-xs font-semibold uppercase tracking-wider transition-all whitespace-nowrap ${
+              tab === t
+                ? 'bg-primary text-primary-foreground shadow-xs'
+                : 'bg-card text-muted-foreground border border-border/80 hover:text-foreground hover:bg-secondary'
+            }`}
           >
             {t}
           </button>
@@ -76,68 +76,87 @@ export default function CreatorPromptsPage() {
 
       {/* List */}
       {loading ? (
-        <p style={{ fontFamily: 'var(--font-sans,sans-serif)', color: '#A79FC4', textAlign: 'center', padding: 40 }}>Loading...</p>
+        <div className="py-16 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
+          <Loader2 className="h-4 w-4 animate-spin text-primary" /> Loading prompts...
+        </div>
       ) : prompts.length === 0 ? (
-        <div style={{ background: '#1D1926', border: '1px solid #37324A', borderRadius: 14, padding: 48, textAlign: 'center' }}>
-          <p style={{ fontFamily: 'var(--font-sans,sans-serif)', fontSize: 14, color: '#A79FC4', margin: '0 0 12px' }}>No prompts in this category.</p>
-          <Link href="/creator/prompts/new" style={{ fontFamily: 'var(--font-sans,sans-serif)', fontSize: 13, fontWeight: 600, color: '#FF6B4A' }}>Create your first →</Link>
+        <div className="rounded-2xl border border-border bg-card p-12 text-center space-y-3">
+          <p className="text-sm text-muted-foreground">No prompts in this status category.</p>
+          <Link href="/creator/prompts/new">
+            <Button variant="outline" size="sm" className="font-semibold">
+              Create your first prompt →
+            </Button>
+          </Link>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(320px,1fr))', gap: 16 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {prompts.map((p) => {
-            const st = STATUS_STYLE[p.status] ?? STATUS_STYLE.draft;
             const canEdit = ['draft', 'rejected'].includes(p.status);
             const canDelete = p.status === 'draft';
             return (
-              <div key={p._id} style={{ background: '#1D1926', border: '1px solid #37324A', borderRadius: 12, padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {/* Image Preview if available */}
-                {p.image && (
-                  <div style={{ width: '100%', height: 160, borderRadius: 8, overflow: 'hidden', background: '#14121A', border: '1px solid #37324A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={p.image} alt={p.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  </div>
-                )}
+              <div
+                key={p._id}
+                className="rounded-2xl border border-border bg-card p-5 space-y-4 shadow-xs flex flex-col justify-between"
+              >
+                <div className="space-y-3">
+                  {/* Image Preview if available */}
+                  {p.image && (
+                    <div className="w-full h-40 rounded-xl overflow-hidden bg-secondary/40 border border-border relative flex items-center justify-center">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={p.image} alt={p.title} className="w-full h-full object-cover" />
+                    </div>
+                  )}
 
-                {/* Top row */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                  <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', color: '#A79FC4', background: '#262131', border: '1px solid #37324A', borderRadius: 4, padding: '3px 8px' }}>{p.category ?? 'General'}</span>
-                  <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', color: st.color, background: st.bg, border: `1px solid ${st.color}33`, borderRadius: 4, padding: '3px 8px', textTransform: 'uppercase' }}>{p.status}</span>
+                  {/* Badges */}
+                  <div className="flex items-center justify-between gap-2">
+                    <Badge variant="outline" className="text-[10px] font-mono text-muted-foreground bg-secondary/50">
+                      {p.category ?? 'General'}
+                    </Badge>
+                    <Badge variant="outline" className={`text-[10px] font-mono font-semibold uppercase ${STATUS_BADGE_STYLE[p.status] || STATUS_BADGE_STYLE.draft}`}>
+                      {p.status}
+                    </Badge>
+                  </div>
+
+                  {/* Title + Prompt payload */}
+                  <div>
+                    <h3 className="font-display font-semibold text-base text-foreground line-clamp-1">{p.title}</h3>
+                    <p className="font-mono text-xs text-muted-foreground line-clamp-3 mt-1.5 bg-muted/20 p-2.5 rounded-lg border border-border/40">
+                      {p.prompt}
+                    </p>
+                  </div>
+
+                  {/* Rejection notice */}
+                  {p.status === 'rejected' && p.rejectionReason && (
+                    <div className="flex items-start gap-2 bg-destructive/10 border border-destructive/20 rounded-xl p-3 text-xs text-destructive">
+                      <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                      <p className="leading-snug">{p.rejectionReason}</p>
+                    </div>
+                  )}
                 </div>
 
-                {/* Title + prompt */}
-                <div>
-                  <p style={{ fontFamily: 'var(--font-display,sans-serif)', fontWeight: 600, fontSize: 15, color: '#EDE9F7', margin: '0 0 6px' }}>{p.title}</p>
-                  <p style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, color: '#A79FC4', margin: 0, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>{p.prompt}</p>
-                </div>
-
-                {/* Rejection reason */}
-                {p.status === 'rejected' && p.rejectionReason && (
-                  <div style={{ display: 'flex', gap: 8, background: 'rgba(255,107,74,0.07)', border: '1px solid rgba(255,107,74,0.2)', borderRadius: 8, padding: '8px 10px' }}>
-                    <AlertCircle size={13} color="#FF6B4A" style={{ flexShrink: 0, marginTop: 1 }} />
-                    <p style={{ fontFamily: 'var(--font-sans,sans-serif)', fontSize: 12, color: '#FF6B4A', margin: 0 }}>{p.rejectionReason}</p>
-                  </div>
-                )}
-
-                {/* Actions */}
-                <div style={{ paddingTop: 12, borderTop: '1px solid #37324A', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontFamily: 'var(--font-mono,monospace)', fontSize: 11, color: '#A79FC4' }}>{new Date(p.updatedAt ?? p.createdAt).toLocaleDateString()}</span>
-                  <div style={{ display: 'flex', gap: 6 }}>
+                {/* Actions Footer */}
+                <div className="pt-3 border-t border-border flex items-center justify-between gap-2">
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {new Date(p.updatedAt ?? p.createdAt).toLocaleDateString()}
+                  </span>
+                  <div className="flex items-center gap-2">
                     {canEdit && (
-                      <Link
-                        href={`/creator/prompts/${p._id}/edit`}
-                        style={{ display: 'flex', alignItems: 'center', gap: 5, fontFamily: 'var(--font-sans,sans-serif)', fontSize: 12, fontWeight: 600, color: '#83E6C9', background: 'rgba(131,230,201,0.08)', border: '1px solid rgba(131,230,201,0.2)', borderRadius: 6, padding: '5px 10px', textDecoration: 'none' }}
-                      >
-                        <Edit size={12} /> Edit
+                      <Link href={`/creator/prompts/${p._id}/edit`}>
+                        <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs font-semibold">
+                          <Edit className="h-3.5 w-3.5 text-emerald-500" /> Edit
+                        </Button>
                       </Link>
                     )}
                     {canDelete && (
-                      <button
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => handleDelete(p._id)}
                         disabled={deleting === p._id}
-                        style={{ display: 'flex', alignItems: 'center', gap: 5, fontFamily: 'var(--font-sans,sans-serif)', fontSize: 12, fontWeight: 600, color: '#FF6B4A', background: 'rgba(255,107,74,0.08)', border: '1px solid rgba(255,107,74,0.2)', borderRadius: 6, padding: '5px 10px', cursor: 'pointer' }}
+                        className="h-8 gap-1.5 text-xs font-semibold text-destructive hover:bg-destructive/10"
                       >
-                        <Trash2 size={12} /> {deleting === p._id ? '...' : 'Delete'}
-                      </button>
+                        <Trash2 className="h-3.5 w-3.5" /> {deleting === p._id ? '...' : 'Delete'}
+                      </Button>
                     )}
                   </div>
                 </div>

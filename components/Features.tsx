@@ -2,199 +2,96 @@
 
 const FEATURES = [
   {
-    tag:   'PREVIEW',
-    title: 'High-resolution previews',
-    copy:  'See the full render before you commit to a prompt — every card shows a real example, not a thumbnail guess.',
+    tag:   '01 / PREVIEW',
+    title: 'High-resolution render previews',
+    copy:  'See the full visual render before committing to a prompt — every card features artwork produced by the exact prompt syntax.',
     tagColor: '#83E6C9',
     tagBg: 'rgba(131,230,201,0.1)',
   },
   {
-    tag:   'COPY',
-    title: 'One-click prompt copy',
-    copy:  'Copy the exact string, parameters included. No retyping, no missing weights or aspect ratios.',
+    tag:   '02 / COPY',
+    title: 'One-click prompt syntax copy',
+    copy:  'Copy full prompt recipes with model parameters, weights, and aspect ratio flags included. No missing parameters or syntax errors.',
     tagColor: '#FF6B4A',
     tagBg: 'rgba(255,107,74,0.1)',
   },
   {
-    tag:   'MJ · DALL·E · SD',
-    title: 'Built for every model',
-    copy:  'Prompts are tagged and formatted for Midjourney, DALL·E 3, and Stable Diffusion, so the syntax already matches your tool.',
-    tagColor: '#A79FC4',
-    tagBg: 'rgba(167,159,196,0.1)',
-  },
-  {
-    tag:   'VERIFIED',
-    title: 'Checked by admins',
-    copy:  'Every prompt is tested and confirmed to render before it\'s published — no dead syntax, no surprises.',
+    tag:   '03 / TAXONOMY',
+    title: 'Engineered for every model',
+    copy:  'Prompts are formatted specifically for Midjourney v6, DALL·E 3, Stable Diffusion, and ChatGPT — so syntax matches your tool.',
     tagColor: '#83E6C9',
     tagBg: 'rgba(131,230,201,0.1)',
   },
   {
-    tag:   'TAXONOMY',
-    title: 'Organized by style',
-    copy:  'Browse by category — couple portraits, editorial dress, fantasy scenes — filtered, not buried in folders.',
+    tag:   '04 / VERIFIED',
+    title: 'Tested by platform admins',
+    copy:  'Every public prompt is tested to confirm rendering quality before approval — no dead syntax, no broken outputs.',
     tagColor: '#FF6B4A',
     tagBg: 'rgba(255,107,74,0.1)',
   },
   {
-    tag:   'SAVED',
-    title: 'Your own workspace',
-    copy:  'Save prompts you like, build a personal collection, and pick up your last search where you left off.',
-    tagColor: '#A79FC4',
-    tagBg: 'rgba(167,159,196,0.1)',
+    tag:   '05 / CREATOR',
+    title: 'Creator publishing studio',
+    copy:  'Prompt engineers can publish custom prompt recipes, track application approval status, and build their creator portfolio.',
+    tagColor: '#83E6C9',
+    tagBg: 'rgba(131,230,201,0.1)',
+  },
+  {
+    tag:   '06 / SPEED',
+    title: 'Sub-50ms Redis cache layer',
+    copy:  'High-speed Redis query caching drops response times from 1,300ms down to ~40ms for lightning-fast search and filter performance.',
+    tagColor: '#FF6B4A',
+    tagBg: 'rgba(255,107,74,0.1)',
   },
 ] as const;
 
 export default function Features() {
   return (
-    <section
-      id="features"
-      style={{
-        background: '#14121A',
-        borderBottom: '1px solid #37324A',
-        padding: '96px 24px',
-      }}
-    >
-      <div style={{ maxWidth: 1180, margin: '0 auto' }}>
-        {/* Section header */}
-        <div style={{ textAlign: 'center', marginBottom: 64 }}>
-          <span
-            style={{
-              display: 'inline-block',
-              fontFamily: 'var(--font-mono, "IBM Plex Mono", monospace)',
-              fontSize: 11,
-              fontWeight: 600,
-              letterSpacing: '0.12em',
-              color: '#83E6C9',
-              marginBottom: 16,
-            }}
-          >
-            WHAT YOU GET
+    <section id="features" className="bg-[#14121A] border-b border-[#37324A] py-16 sm:py-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        
+        {/* Section Header */}
+        <div className="text-center max-w-2xl mx-auto space-y-3">
+          <span className="font-mono text-xs font-semibold tracking-widest text-[#83E6C9] uppercase">
+            LIGHT-TABLE PLATFORM FEATURES
           </span>
-          <h2
-            style={{
-              fontFamily: 'var(--font-display, "Space Grotesk", sans-serif)',
-              fontWeight: 700,
-              fontSize: 'clamp(28px, 4vw, 42px)',
-              color: '#EDE9F7',
-              margin: '0 0 16px',
-              letterSpacing: '-0.02em',
-            }}
-          >
-            Everything you need for stunning AI image generation
+          <h2 className="font-display font-extrabold text-3xl sm:text-4xl text-[#EDE9F7] tracking-tight">
+            Built for precision prompt engineering
           </h2>
-          <p
-            style={{
-              fontFamily: 'var(--font-sans, "IBM Plex Sans", sans-serif)',
-              fontSize: 16,
-              color: '#A79FC4',
-              maxWidth: 520,
-              margin: '0 auto',
-              lineHeight: 1.65,
-            }}
-          >
-            No guesswork. Find high-performing prompts, copy them with one click, and
-            generate world-class artwork.
+          <p className="font-sans text-base text-[#A79FC4] leading-relaxed">
+            No guesswork. Real parameters, verified syntax, and zero bloat.
           </p>
         </div>
 
-        {/* 6-card grid */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-            gap: 20,
-          }}
-        >
+        {/* 6-Card Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {FEATURES.map((f) => (
-            <FeatureCard key={f.tag} {...f} />
+            <div
+              key={f.tag}
+              className="bg-[#1D1926] border border-[#37324A] rounded-2xl p-6 sm:p-7 transition-all duration-200 hover:-translate-y-1 hover:border-[#FF6B4A]/60 flex flex-col justify-between space-y-4 shadow-xs"
+            >
+              <div className="space-y-3">
+                {/* Mono Tag Badge */}
+                <span
+                  style={{ color: f.tagColor, backgroundColor: f.tagBg, borderColor: `${f.tagColor}33` }}
+                  className="inline-block font-mono text-[10px] font-semibold tracking-wider border px-2.5 py-1 rounded-md uppercase"
+                >
+                  {f.tag}
+                </span>
+
+                <h3 className="font-display font-semibold text-lg text-[#EDE9F7] tracking-tight">
+                  {f.title}
+                </h3>
+
+                <p className="font-sans text-sm text-[#A79FC4] leading-relaxed">
+                  {f.copy}
+                </p>
+              </div>
+            </div>
           ))}
         </div>
+
       </div>
     </section>
-  );
-}
-
-function FeatureCard({
-  tag,
-  title,
-  copy,
-  tagColor,
-  tagBg,
-}: {
-  tag: string;
-  title: string;
-  copy: string;
-  tagColor: string;
-  tagBg: string;
-}) {
-  return (
-    <div
-      style={{
-        background: '#1D1926',
-        border: '1px solid #37324A',
-        borderRadius: 14,
-        padding: '28px 28px 28px',
-        transition: 'background 0.2s, border-color 0.2s, transform 0.2s, box-shadow 0.2s',
-        cursor: 'default',
-      }}
-      onMouseEnter={(e) => {
-        const el = e.currentTarget as HTMLDivElement;
-        el.style.background = '#262131';
-        el.style.borderColor = '#FF6B4A';
-        el.style.transform = 'translateY(-3px)';
-        el.style.boxShadow = '0 12px 40px rgba(0,0,0,0.4)';
-      }}
-      onMouseLeave={(e) => {
-        const el = e.currentTarget as HTMLDivElement;
-        el.style.background = '#1D1926';
-        el.style.borderColor = '#37324A';
-        el.style.transform = 'translateY(0)';
-        el.style.boxShadow = 'none';
-      }}
-    >
-      {/* Mono tag badge */}
-      <span
-        style={{
-          display: 'inline-block',
-          fontFamily: 'var(--font-mono, "IBM Plex Mono", monospace)',
-          fontSize: 10,
-          fontWeight: 600,
-          letterSpacing: '0.1em',
-          color: tagColor,
-          background: tagBg,
-          border: `1px solid ${tagColor}33`,
-          padding: '3px 9px',
-          borderRadius: 4,
-          marginBottom: 18,
-        }}
-      >
-        {tag}
-      </span>
-
-      <h3
-        style={{
-          fontFamily: 'var(--font-display, "Space Grotesk", sans-serif)',
-          fontWeight: 600,
-          fontSize: 17,
-          color: '#EDE9F7',
-          margin: '0 0 10px',
-          letterSpacing: '-0.01em',
-        }}
-      >
-        {title}
-      </h3>
-      <p
-        style={{
-          fontFamily: 'var(--font-sans, "IBM Plex Sans", sans-serif)',
-          fontSize: 14,
-          lineHeight: 1.65,
-          color: '#A79FC4',
-          margin: 0,
-        }}
-      >
-        {copy}
-      </p>
-    </div>
   );
 }

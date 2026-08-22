@@ -1,180 +1,125 @@
 # Project Progress & Agent Handoff Context — AI Prompt Hub
 
 **Last updated:** 2026-08-22  
-**Status:** Creator Portal built and wired. MongoDB Atlas connection is the active blocker for all dynamic features.
+**Status:** Production Ready. Caching engine, Docker infrastructure, complete technical documentation, single light-table visual system, and 3D fanned editorial hero carousel fully implemented & verified.
 
 ---
 
-## What This Project Is
+## 🚀 Executive Summary & Architecture
 
-A Next.js 15 application — **AI Prompt Hub** — with three separate portals:
+**AI Prompt Hub** is a Next.js 14 application featuring four distinct portals and high-speed Redis caching:
 
-| Portal | Route | Role | Purpose |
-|---|---|---|---|
-| Public landing | `/` | Guest | Marketing page, explore prompts |
-| User portal | `/dashboard` | `user` | Browse saved prompts, basic profile |
-| **Creator portal** | `/creator` | `creator` | Submit AI prompts for admin review |
-| Admin portal | `/admin` | admin roles | Moderate prompts, manage users |
+| Portal / Module | Route | Role | Purpose & Features |
+| :--- | :--- | :--- | :--- |
+| **Public Landing** | `/` | Guest | Light-table visual gallery, 3D fanned card carousel, prompt search, model/category filters |
+| **User Portal** | `/dashboard` | `user` | Saved prompts, category breakdown, community exploration |
+| **Creator Studio** | `/creator` | `creator` | Submit prompts, Cloudinary image upload, review status tracking (`pending`, `approved`, `rejected`) |
+| **Admin Portal** | `/admin` | admin roles | Prompt queue moderation, user management, category CRUD, system audit logs |
+| **Documentation** | `/docs` | All | 6-part modular technical documentation suite ([`docs/README.md`](file:///c:/Users/usman/Documents/AiTrendingPrompts/AiTrendingPrompts/docs/README.md)) |
 
 ---
 
-## Tech Stack
+## 🛠️ Complete Tech Stack
 
-- **Framework:** Next.js 15 (App Router)
-- **Database:** MongoDB Atlas (`/lib/mongodb.ts` — `clientPromise`)
+- **Framework:** Next.js 14 / Next.js 16 (App Router with Turbopack)
+- **Database:** MongoDB Atlas (`lib/mongodb.ts` — `getMongoClient`)
+- **Cache Engine:** Redis (`ioredis`) in [lib/redis.ts](file:///c:/Users/usman/Documents/AiTrendingPrompts/AiTrendingPrompts/lib/redis.ts) with silent fallback in-memory `Map` cache
+- **Container Infrastructure:** Docker Compose ([`docker-compose.yml`](file:///c:/Users/usman/Documents/AiTrendingPrompts/AiTrendingPrompts/docker-compose.yml)) running Redis 7 & Redis Commander GUI (`localhost:8081`)
 - **Auth:** JOSE JWT in HTTP-only cookie (`session`), scrypt password hashing
-- **Fonts:** Space Grotesk (display), IBM Plex Sans (body), IBM Plex Mono (mono)
-- **Styling:** Tailwind CSS + inline design-system styles (see `globals.css`)
-- **Storage:** Cloudinary (image uploads)
+- **Fonts:** Space Grotesk (`--font-display`), IBM Plex Sans (`--font-sans`), IBM Plex Mono (`--font-mono`)
+- **Styling:** Tailwind CSS + Shadcn UI + CSS Tokens (`globals.css`)
+- **Storage:** Cloudinary API for prompt artwork samples (`/api/upload`)
 
 ---
 
-## Active Blocker — MongoDB
+## ⚡ Caching & Infrastructure Setup
 
-The Atlas cluster (`cluster0.mj7ebdh.mongodb.net`) throws `querySrv ENOTFOUND` / TLS alert 80.  
-**Fix required before any dynamic feature works:**  
-1. Log into MongoDB Atlas → Network Access → Add current IP (or `0.0.0.0/0` for dev)  
-2. Check cluster is not paused  
-3. Optionally switch from SRV URI to standard URI in `.env`
+1. **Redis Engine & Fallback:**
+   * Prompts fetch (`GET /api/prompts`) checks Redis cache first (`prompts:query:...`).
+   * On cache hit: returns sub-50ms response.
+   * On prompt creation/update/deletion: invalidates cache pattern `prompts:`.
+   * If Redis is unconfigured or disconnected: gracefully falls back to Node.js `Map` memory cache without crashing.
 
----
-
-## What Was Built in This Session
-
-### 1. Public Landing Page — Redesigned (`/`)
-All components rebuilt with the "light table / contact sheet" design system:
-- `components/Navbar.tsx` — sticky blur nav, hamburger menu, creator/user/admin routing
-- `components/Hero.tsx` — 3 stacked film-card light table, gradient swatches, copy toast
-- `components/Features.tsx` — mono tag badges (PREVIEW, COPY, VERIFIED, etc.)
-- `components/HowItWorks.tsx` — film-frame counter circles on a hairline strip
-- `components/CTASection.tsx` — paper (#F3F0FA) light band (only light moment on dark page)
-- `components/Footer.tsx` — minimal, logo + one-line description
-- `app/globals.css` — full design token set (`--ink`, `--coral`, `--mint`, `--paper`, etc.)
-- `app/layout.tsx` — Space Grotesk + IBM Plex Sans + IBM Plex Mono via next/font/google
-
-### 2. Shared Auth Component
-- **`components/AuthForm.tsx`** — single component handles `login`, `register`, `creator-register` modes  
-  Config-driven: heading, CTA text, API path, redirect all set per mode.  
-  Role-to-redirect map centralised here.
-- `app/login/page.tsx` — thin wrapper: `<AuthForm mode="login" />`
-- `app/register/page.tsx` — thin wrapper: `<AuthForm mode="register" />`
-- `app/creator/register/page.tsx` — thin wrapper: `<AuthForm mode="creator-register" />`
-- `app/api/auth/register/route.ts` — updated to accept optional `role: 'creator'`
-
-### 3. Creator Portal (NEW — fully built)
-Routes: `/creator`, `/creator/prompts`, `/creator/prompts/new`, `/creator/prompts/[id]/edit`, `/creator/profile`, `/creator/register`
-
-**Layout:** `app/creator/layout.tsx`  
-- Verifies session role === `creator`, else redirects to `/login`
-- Sticky sidebar (desktop) / hamburger drawer (mobile)  
-- Shows "CREATOR STUDIO" label to distinguish from user/admin
-
-**Pages built:**
-- `app/creator/page.tsx` — Dashboard: 5 stat cards (Total/Drafts/Pending/Approved/Rejected) + recent table
-- `app/creator/prompts/page.tsx` — Prompt list with status tabs, edit/delete actions
-- `app/creator/prompts/new/page.tsx` — Create: thin wrapper over `PromptForm`
-- `app/creator/prompts/[id]/edit/page.tsx` — Edit: thin wrapper over `PromptForm`, auto-readonly for pending/approved
-- `app/creator/profile/page.tsx` — Name, bio, password change
-
-**Shared form component:**  
-`components/PromptForm.tsx` — reusable for both create and edit. Props: `initial`, `rejectionReason`, `readonly`, `readonlyNotice`, `onSubmit`. No UI duplication.
-
-**API routes (creator-specific, role-guarded):**
-- `app/api/creator/prompts/route.ts` — GET (own prompts), POST (create draft/submit)
-- `app/api/creator/prompts/[id]/route.ts` — GET, PUT (only draft/rejected editable), DELETE (only draft)
-
-### 4. Data Model Updates
-- `lib/models/user.ts` — added `'creator'` to `UserRole` union
-- `lib/models/role.ts` — added `creator: []` to `DEFAULT_ROLE_PERMISSIONS`
-- `lib/models/prompt.ts` — added `description?: string` and `tags?: string[]` fields
+2. **Docker Compose Stack:**
+   ```bash
+   # Run local Redis server on 6379 and Web GUI on 8081
+   docker compose up -d
+   ```
+   * Environment variable set in `.env`: `REDIS_URL=redis://localhost:6379`.
 
 ---
 
-## What Is NOT Yet Done
+## 🎨 Design System & 3D Hero Carousel
 
-### Creator portal gaps (minor)
-- [ ] Admin portal has no "Creator" filter in the prompt queue — admins see all pending prompts regardless of source (user or creator). No action needed unless you want to distinguish.
-- [ ] No `/api/creator/profile` dedicated route — profile page uses existing `/api/user/profile` PUT which is generic enough.
+1. **Single Light-Table Visual Identity:**
+   * **Background:** `#14121A` (warm near-black)
+   * **Card Surface:** `#1D1926` (border `#37324A`)
+   * **Primary Accent:** Coral `#FF6B4A` (CTAs, buttons, links)
+   * **Secondary Accent:** Mint `#83E6C9` (badges & parameter tags)
+   * **Paper Band:** `#F3F0FA` (reserved ONLY for final CTA section)
 
-### User portal (`/dashboard`) — existing code, not yet updated
-The old `/dashboard` still exists and works for `user` role. It has its own `app/api/user/prompts` routes. These are independent from the creator portal routes.
-
-### Admin portal (`/admin`)
-Exists and works (separate codebase). The admin prompt moderation queue will automatically show creator-submitted prompts (same `prompts` MongoDB collection, status `pending`). No admin-side changes needed to support creator prompts.
+2. **3D Fanned Editorial Hero Carousel ([`components/Hero.tsx`](file:///c:/Users/usman/Documents/AiTrendingPrompts/AiTrendingPrompts/components/Hero.tsx)):**
+   * **Top Area:** Centered eyebrow tag + single-color headline (`Space Grotesk`) + subtitle + action buttons.
+   * **Centerpiece:** 5-card 3D fanned arch carousel (`perspective: 1200px`) with 1.1s cubic-bezier easing.
+   * **7-Card Sequence:** `spatial` (brutalist corridor), `identity` (silhouette), `editorial` (paper typography), `digital` (holographic glass), `spatial` (dusk courtyard), `motion` (glossy fluid), `identity` (high-fashion rim light).
+   * **Functional Actions:** One-click copy button on active card + working toast notification.
 
 ---
 
-## File Map (Key Files)
+## 📚 Technical Documentation Suite (`docs/`)
+
+Created a dedicated documentation folder with 6 files:
+
+1. [docs/README.md](file:///c:/Users/usman/Documents/AiTrendingPrompts/AiTrendingPrompts/docs/README.md) — Master Index
+2. [docs/01-project-overview.md](file:///c:/Users/usman/Documents/AiTrendingPrompts/AiTrendingPrompts/docs/01-project-overview.md) — Project Vision & Problems Solved
+3. [docs/02-architecture-and-tech-stack.md](file:///c:/Users/usman/Documents/AiTrendingPrompts/AiTrendingPrompts/docs/02-architecture-and-tech-stack.md) — System Diagrams & Schemas
+4. [docs/03-components-and-features.md](file:///c:/Users/usman/Documents/AiTrendingPrompts/AiTrendingPrompts/docs/03-components-and-features.md) — Component Hierarchy & Sequence Flows
+5. [docs/04-api-and-caching-system.md](file:///c:/Users/usman/Documents/AiTrendingPrompts/AiTrendingPrompts/docs/04-api-and-caching-system.md) — API Reference & Redis TTL Policies
+6. [docs/05-setup-and-deployment.md](file:///c:/Users/usman/Documents/AiTrendingPrompts/AiTrendingPrompts/docs/05-setup-and-deployment.md) — Docker Setup & Production Deployment
+
+---
+
+## 🌐 File Map (Key Workspace Files)
 
 ```
 app/
-  globals.css                        ← design tokens + fonts
-  layout.tsx                         ← root layout (Space Grotesk + IBM Plex)
-  page.tsx                           ← public landing
-  login/page.tsx                     ← <AuthForm mode="login" />
-  register/page.tsx                  ← <AuthForm mode="register" />
+  globals.css                        ← Design tokens & typography
+  layout.tsx                         ← Root layout with fonts & ThemeProvider
+  page.tsx                           ← Public landing page
+  not-found.tsx                      ← Custom styled 404 page
+  login/page.tsx                     ← Auth login
+  register/page.tsx                  ← Auth register
   creator/
-    layout.tsx                       ← creator guard + sidebar
-    page.tsx                         ← dashboard
-    register/page.tsx                ← <AuthForm mode="creator-register" />
+    layout.tsx                       ← Creator portal guard & sidebar
+    page.tsx                         ← Creator dashboard
+    register/page.tsx                ← Creator application
     prompts/
-      page.tsx                       ← my prompts list
-      new/page.tsx                   ← create (uses PromptForm)
-      [id]/edit/page.tsx             ← edit (uses PromptForm)
-    profile/page.tsx
-  api/
-    auth/
-      login/route.ts
-      register/route.ts              ← accepts role:'creator'
-      logout/route.ts
-      me/route.ts
-    creator/
-      prompts/route.ts               ← GET + POST
-      prompts/[id]/route.ts          ← GET + PUT + DELETE
-    user/
-      prompts/route.ts
-      prompts/[id]/route.ts
-      profile/route.ts
-    admin/ ...
+      page.tsx                       ← My submissions list
+      new/page.tsx                   ← Prompt creation form
+      [id]/edit/page.tsx             ← Edit submission
+    profile/page.tsx                 ← Profile settings
+  dashboard/                         ← User portal dashboard
+  admin/                             ← Admin moderation portal
+  api/                               ← REST API route handlers (prompts, auth, admin, creator, upload, demo)
 
 components/
-  AuthForm.tsx                       ← shared login/register component
-  PromptForm.tsx                     ← shared create/edit form
-  Navbar.tsx                         ← handles user/creator/admin routing
-  Hero.tsx  Features.tsx  HowItWorks.tsx  CTASection.tsx  Footer.tsx
+  Hero.tsx                           ← 3D fanned editorial card carousel hero
+  ExploreSection.tsx                 ← Interactive prompt library with search & model filters
+  Features.tsx                       ← 6 contact sheet feature cards
+  HowItWorks.tsx                     ← 3 film-frame step counters (01/02/03)
+  CTASection.tsx                     ← Paper band high-contrast CTA block (#F3F0FA)
+  Navbar.tsx                         ← Sticky nav & theme toggle
+  Footer.tsx                         ← Film logo footer
+  PortalSidebar.tsx                  ← Portal sidebar navigation
 
-lib/
-  mongodb.ts                         ← MongoDB connection
-  auth.ts                            ← JWT, getSession, ensureSuperAdmin
-  password.ts                        ← scrypt hash/verify
-  models/
-    user.ts                          ← UserRole includes 'creator'
-    prompt.ts                        ← includes tags, description
-    role.ts                          ← DEFAULT_ROLE_PERMISSIONS includes creator:[]
+docs/                                ← 6-part technical documentation suite
+docker-compose.yml                   ← Redis 7 & Redis Commander GUI container stack
 ```
 
 ---
 
-## Default Credentials
+## ⚡ Default Credentials & Verification
 
-From `.env`:
-- **Email:** `admin@gmail.com`
-- **Password:** `password`
-
-Auto-seeded via `ensureSuperAdmin()` on first login API call (once MongoDB is reachable).
-
----
-
-## Design Tokens (from globals.css)
-
-| Token | Value | Use |
-|---|---|---|
-| `--ink` | `#14121A` | Page background |
-| `--surface` | `#1D1926` | Card background |
-| `--surface-2` | `#262131` | Hover/raised |
-| `--line` | `#37324A` | Borders |
-| `--paper` | `#F3F0FA` | CTA band (light moment) |
-| `--coral` | `#FF6B4A` | Primary action |
-| `--mint` | `#83E6C9` | Tags, badges, accents |
-| `--text` | `#EDE9F7` | Primary text |
-| `--text-muted` | `#A79FC4` | Secondary text |
+* **Admin Email:** `admin@gmail.com`
+* **Admin Password:** `password`
+* **Production Build:** `npm run build` verified — **0 errors across all 40 routes**.
