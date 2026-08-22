@@ -2,6 +2,9 @@
 
 AI Trending Prompts is a Next.js app for browsing, copying, and managing AI prompt cards. It has a public gallery for visitors and a protected admin dashboard for creating, editing, hiding, and deleting prompts.
 
+> 📖 **Comprehensive Technical Documentation:** Detailed guides covering project purpose, architecture, components, API reference, Redis caching, and setup can be found in the [`docs/`](docs/README.md) directory.
+
+
 ## Overview
 
 The project is built around a simple content workflow:

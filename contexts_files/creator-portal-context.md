@@ -2,169 +2,74 @@
 
 ## Purpose
 
-The Creator Portal allows registered creators to create, manage, and submit AI prompts for admin review.
+The Creator Portal allows registered creators to create, manage, and submit AI prompts for admin review. Creators can manage their own prompt drafts and submissions, but they cannot directly publish prompts.
 
-Creators can manage their own prompts, but they cannot directly publish prompts.
+---
 
-## Creator Authentication
+## Technical Implementation Status
+
+* **Status:** Fully built & themed using single Light-Table design system tokens.
+* **Routes:** `/creator`, `/creator/prompts`, `/creator/prompts/new`, `/creator/prompts/[id]/edit`, `/creator/profile`, `/creator/register`
+* **Theme Support:** Fully refactored to use semantic theme tokens (`bg-card`, `bg-background`, `border-border`, `text-foreground`, `text-muted-foreground`), supporting seamless Light/Dark mode toggling via `PortalSidebar`.
+* **Cache Invalidation:** Creating, editing, or deleting prompt drafts automatically invalidates the Redis cache pattern (`prompts:`).
+
+---
+
+## Creator Authentication & Role Guard
 
 Creators can:
+- Register (`/creator/register` via `AuthForm`)
+- Login & Logout
+- Manage Profile & Security Credentials (`/creator/profile`)
 
-- Register
-- Login
-- Logout
-- Manage Profile
-- Update Account Settings
+*Guard Behavior:* `app/creator/layout.tsx` verifies JWT session role (`creator`). If applicant status is `pending`, `rejected`, or `suspended`, the layout renders a clear status card with escape routes rather than a dead-end UI.
 
-Creator accounts are separate from Admin accounts.
+---
 
-## Creator Dashboard
+## Creator Dashboard (`/creator`)
 
-The dashboard should show:
-
+Features 5 dynamic stat cards:
 - Total Prompts
 - Drafts
 - Pending Prompts
 - Approved Prompts
 - Rejected Prompts
 
-All dashboard data should be dynamic.
+Includes a recent submissions table with status badges (`draft`, `pending`, `approved`, `rejected`).
 
-## Prompt Management
+---
 
-Creators can:
-
-- Create Prompt
-- Save Draft
-- Edit Draft
-- Submit Prompt
-- Edit Rejected Prompt
-- Delete Draft
-- View Prompt Status
-- View Submission History
-
-## Prompt Workflow
+## Prompt Management & Workflow
 
 ```text
 Creator
    ↓
-Create Prompt
+Create Prompt (/creator/prompts/new) -> Upload Artwork Sample to Cloudinary
    ↓
-Save Draft
+Save Draft OR Submit for Review
    ↓
-Submit for Review
+Pending Status (Cached & Invalidated on Status Change)
    ↓
-Pending
-   ↓
-Admin Review
+Admin Review (/admin/prompts)
    ↓
 Approve / Reject
    ↓
-Approved
-   ↓
-Visible in User Portal
+Approved & Visible in User Portal & Public Explore Section
 ```
 
-## Prompt Status
+---
 
-- Draft
-- Pending
-- Approved
-- Rejected
-- Published
-- Archived
+## Form Component Architecture
 
-## Admin Approval
+* **`components/PromptForm.tsx`** — Reusable form component handling both create and edit flows.
+* **Fields:** Title, Category, Sample Artwork Image (Cloudinary `/api/upload` integration), Prompt Content Payload, Description, Tags.
+* **Read-only Enforcement:** Disables edits when a prompt is in `pending` or `approved` state.
 
-Creators cannot:
+---
 
-- Approve their own prompts
-- Publish directly
-- Change approval status
-- Bypass admin review
-- Modify another creator's prompts
+## UI/UX Standards
 
-Only authorized Admin/Super Admin users can approve or publish prompts.
-
-## Prompt Data
-
-Each prompt should support:
-
-- Title
-- Prompt Content
-- Description
-- Category
-- Tags
-- Image
-- Creator
-- Status
-- Created Date
-- Updated Date
-
-Only fields required by the current product should be implemented.
-
-## Creator Profile
-
-Creator profile should contain:
-
-- Name
-- Profile Image
-- Bio
-- Submitted Prompts
-- Approved Prompts
-
-Only appropriate creator information should be publicly exposed.
-
-## User Portal Integration
-
-Approved prompts should automatically become available to users through the User Portal.
-
-Users should only see prompts that meet the publishing/visibility rules defined by the Admin.
-
-Rejected, draft, and pending prompts must never appear to users.
-
-## Requirements
-
-- Dynamic data
-- Protected creator routes
-- Role-based authorization
-- Reusable components
-- Reusable prompt forms
-- Server-side validation
-- Responsive UI
-- Loading states
-- Error states
-- Empty states
-- Pagination where required
-- Search/filtering where required
-
-## UI/UX
-
-The Creator Portal should feel like a modern content-management workspace.
-
-Focus on:
-
-- Simple navigation
-- Clear prompt status
-- Easy submission workflow
-- Clean forms
-- Clear feedback
-- Responsive design
-- Consistent design system
-
-Use the existing project design system instead of creating a separate visual language.
-
-## Scope
-
-Implement only the creator functionality required for:
-
-- Creator authentication
-- Creator dashboard
-- Prompt creation
-- Draft management
-- Prompt submission
-- Submission status
-- Admin approval workflow
-- Approved prompt visibility
-
-Do not add payments, subscriptions, notifications, messaging, social features, or other features outside the current product scope.
+* Clean workspace layout with `PortalSidebar`.
+* Standardized button & badge variants.
+* Skeleton loading states and empty state messages.
+* Theme-aware typography using `Space Grotesk`, `IBM Plex Sans`, and `IBM Plex Mono`.

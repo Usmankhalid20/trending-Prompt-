@@ -2,23 +2,26 @@
 
 ## Purpose
 
-Provide authenticated users with a personal workspace (`/dashboard`) to manage their AI prompt creations, track submission review statuses, and save favorite image prompts.
+Provide authenticated users with a personal workspace (`/dashboard`) to explore curated AI prompt collections, view category usage analytics breakdown, save prompts, and upgrade to Creator status.
 
 ---
 
-## User Workspace Dashboard (`/dashboard`)
+## Workspace Features (`/dashboard`)
 
-- **Overview Cards:** Total Prompts, Pending Review, Approved/Published, Drafts
-- **My Prompts (`/dashboard/prompts`):** List of user-submitted prompts with real-time status indicators
-- **Create Prompt (`/dashboard/prompts/new`):** Prompt submission form with Cloudinary image upload, prompt text, title, and target AI model
-- **Profile & Security (`/dashboard/profile`):** User profile information and password management
+1. **Analytics Overview Cards:**
+   * Total AI Prompts
+   * Top Category & Usage Count
+   * Active Categories Count
+   * Community Creators Count
 
----
+2. **Category Usage Breakdown:**
+   * Visual percentage bar charts showing prompt distribution across domains (Coding, Marketing, Editorial, Fantasy, Architecture).
 
-## Prompt Life-Cycle
+3. **Prompt Library Explorer:**
+   * Keyword search input.
+   * Category filter pills.
+   * Prompt cards with image previews, author badges, and one-click copy buttons.
+   * Detailed inspection modal (`PromptDetailsModal`).
 
-1. **Submission:** User fills out title, prompt text, target AI model (Midjourney, DALL-E 3, ChatGPT), and uploads artwork sample image.
-2. **Pending Moderation:** Submission defaults to `pending` status and enters the Admin Moderation Queue.
-3. **Review Decision:**
-   - **Approved / Published:** Prompt becomes publicly visible in the `/explore` gallery and landing page showcase.
-   - **Rejected:** Feedback/rejection reason is provided to the user.
+4. **Creator Upgrade Path:**
+   * Direct "Apply as Creator" CTA guiding users to `/creator/register`.
