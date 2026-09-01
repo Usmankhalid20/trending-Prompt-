@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { getSession, hasPermission } from '@/lib/auth';
+import { clearCachePattern } from '@/lib/redis';
 import { ObjectId } from 'mongodb';
+import { getFriendlyErrorMessage } from '@/lib/errors';
 
 export async function PUT(
   req: NextRequest,
@@ -73,6 +75,9 @@ export async function PUT(
 
     await promptsCollection.updateOne(query, { $set: updates });
 
+    // Invalidate Redis cache
+    await clearCachePattern('prompts:');
+
     // Log Activity
     await logsCollection.insertOne({
       actorId: session.userId,
@@ -87,7 +92,7 @@ export async function PUT(
 
     return NextResponse.json({ message: `Prompt successfully ${action}d` });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: getFriendlyErrorMessage(error) }, { status: 500 });
   }
 }
 
@@ -116,6 +121,9 @@ export async function DELETE(
 
     await promptsCollection.deleteOne(query);
 
+    // Invalidate Redis cache
+    await clearCachePattern('prompts:');
+
     // Log Activity
     await logsCollection.insertOne({
       actorId: session.userId,
@@ -130,6 +138,6 @@ export async function DELETE(
 
     return NextResponse.json({ message: 'Prompt deleted' });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: getFriendlyErrorMessage(error) }, { status: 500 });
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { getSession } from '@/lib/auth';
+import { clearCachePattern } from '@/lib/redis';
 import { ObjectId } from 'mongodb';
 
 async function requireCreator() {
@@ -68,6 +69,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (submitForReview)     update.status      = 'pending';
 
   await col.updateOne({ _id: oid }, { $set: update });
+
+  // Invalidate Redis cache
+  await clearCachePattern('prompts:');
+
   return NextResponse.json({ message: submitForReview ? 'Resubmitted for review' : 'Draft saved' });
 }
 
@@ -86,5 +91,9 @@ export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id:
   if (existing.status !== 'draft') return NextResponse.json({ error: 'Only drafts can be deleted' }, { status: 403 });
 
   await col.deleteOne({ _id: oid });
+
+  // Invalidate Redis cache
+  await clearCachePattern('prompts:');
+
   return NextResponse.json({ message: 'Deleted' });
 }

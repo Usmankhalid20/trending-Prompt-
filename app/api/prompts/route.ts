@@ -103,7 +103,8 @@ export async function POST(request: Request) {
     const client = await getMongoClient();
     const db = client.db();
 
-    const isAdmin = session.role !== 'user';
+    const adminRoles = ['super_admin', 'senior_admin', 'content_admin', 'moderator', 'admin'];
+    const isAdmin = adminRoles.includes(session.role);
 
     const newPrompt = {
       title: title.trim(),

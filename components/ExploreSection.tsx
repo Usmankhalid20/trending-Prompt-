@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Copy, Check, Eye, Sparkles, Layers } from 'lucide-react';
+import { Copy, Check, Eye, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PromptDetailsModal from '@/components/PromptDetailsModal';
 
-/* ── High-Quality Curated Editorial Catalogue ── */
+/* ── High-Quality Curated Editorial Catalogue with Demo Images ── */
 const CURATED_PROMPTS = [
   {
     _id: 'curated-1',
@@ -19,6 +19,7 @@ const CURATED_PROMPTS = [
     description: 'Cinematic cyberpunk warrior render with ultra-high detail neon reflections and volumetric atmospheric rain fog.',
     authorName: 'alex_cyber_art',
     gradient: 'linear-gradient(135deg, #0d1222 0%, #1e2942 50%, #442a54 100%)',
+    image: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=1200&q=85',
     copiesCount: 1420,
     tags: ['Cyberpunk', 'Samurai', 'Neon', 'Rain'],
   },
@@ -33,6 +34,7 @@ const CURATED_PROMPTS = [
     description: 'High-end architectural render featuring brutalist monolithic concrete structures under sharp golden hour shadows.',
     authorName: 'arch_studio_v6',
     gradient: 'linear-gradient(135deg, #181424 0%, #38293d 50%, #FF6B4A 100%)',
+    image: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1200&q=85',
     copiesCount: 980,
     tags: ['Brutalist', 'Architecture', 'Monolith', 'Shadows'],
   },
@@ -47,6 +49,7 @@ const CURATED_PROMPTS = [
     description: 'Futuristic glassmorphic web app interface mockup with glowing neon typography and depth layers.',
     authorName: 'hologram_ui',
     gradient: 'linear-gradient(135deg, #0e1626 0%, #1a3147 50%, #83E6C9 100%)',
+    image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=85',
     copiesCount: 2310,
     tags: ['Glassmorphism', 'UI Design', 'Holographic', 'Abstract'],
   },
@@ -61,6 +64,7 @@ const CURATED_PROMPTS = [
     description: 'Vogue-inspired editorial fashion layout with floating typography elements and textured natural paper.',
     authorName: 'editorial_vogue',
     gradient: 'linear-gradient(135deg, #1c1824 0%, #3b3247 50%, #827263 100%)',
+    image: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=1200&q=85',
     copiesCount: 1750,
     tags: ['Editorial', 'Fashion', 'Typography', 'Magazine'],
   },
@@ -75,6 +79,7 @@ const CURATED_PROMPTS = [
     description: 'Moody 35mm cinematic film portrait with deep blacks, dramatic rim lighting, and atmospheric smoke fog.',
     authorName: 'film_noir_35mm',
     gradient: 'linear-gradient(135deg, #140d1a 0%, #291a2e 50%, #52273c 100%)',
+    image: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=1200&q=85',
     copiesCount: 3100,
     tags: ['Silhouette', 'Film Grain', 'Moody', 'Portrait'],
   },
@@ -86,9 +91,10 @@ const CURATED_PROMPTS = [
     frameId: 'CS·106',
     aspect: '--ar 1:1',
     prompt: '/imagine prompt: abstract glossy dark purple organic fluid sculpture, metallic chrome reflections, smooth liquid motion, studio lighting --ar 1:1 --v 6.0',
-    gradient: 'linear-gradient(135deg, #170d28 0%, #3e1e5e 50%, #6e3294 100%)',
     description: '3D metallic fluid sculpture render with glossy purple gradients and studio softbox reflections.',
     authorName: 'motion_fluid_lab',
+    gradient: 'linear-gradient(135deg, #170d28 0%, #3e1e5e 50%, #6e3294 100%)',
+    image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=85',
     copiesCount: 840,
     tags: ['Abstract', 'Fluid', '3D Render', 'Glossy'],
   },
@@ -181,6 +187,7 @@ export default function ExploreSection() {
             const gradient = p.gradient || 'linear-gradient(135deg, #181424 0%, #38293d 50%, #FF6B4A 100%)';
             const frameTag = p.frameId || `CS·${101 + index}`;
             const aspectTag = p.aspect || '--ar 16:9';
+            const imageUrl = p.image || p.imageUrl;
 
             return (
               <div
@@ -188,31 +195,17 @@ export default function ExploreSection() {
                 onClick={() => setSelectedPrompt(p)}
                 className="group rounded-2xl border border-[#37324A] bg-[#1D1926] overflow-hidden shadow-lg hover:-translate-y-1.5 hover:border-[#FF6B4A]/70 transition-all duration-300 flex flex-col justify-between cursor-pointer"
               >
-                {/* Film Header Bar */}
-                <div className="bg-[#14121A] px-3.5 py-2 flex items-center justify-between border-b border-[#37324A]">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-[10px] font-semibold text-[#83E6C9] tracking-wider uppercase bg-[#83E6C9]/10 px-2 py-0.5 rounded border border-[#83E6C9]/30">
-                      {frameTag}
-                    </span>
-                    <span className="font-mono text-[10px] font-semibold text-[#A79FC4]">
-                      {aspectTag}
-                    </span>
-                  </div>
-
-                  <span className="font-mono text-[10px] font-semibold text-[#83E6C9] tracking-wider uppercase">
-                    {p.aiModel || 'Midjourney'}
-                  </span>
-                </div>
 
                 {/* Artwork Image / Visual Preview Swatch */}
                 <div className="relative aspect-16/9 w-full bg-[#14121A] overflow-hidden border-b border-[#37324A]">
-                  {p.image ? (
+                  {imageUrl ? (
                     <Image
-                      src={p.image}
+                      src={imageUrl}
                       alt={p.title}
                       fill
                       loading="lazy"
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover group-hover:scale-105 transition-transform duration-700"
                       unoptimized
                     />
                   ) : (
@@ -226,6 +219,9 @@ export default function ExploreSection() {
                       </span>
                     </div>
                   )}
+
+                  {/* Dark subtle overlay gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#14121A]/70 via-transparent to-transparent pointer-events-none" />
 
                   {/* Quick Inspect Hover Overlay */}
                   <div className="absolute inset-0 bg-[#14121A]/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-xs">

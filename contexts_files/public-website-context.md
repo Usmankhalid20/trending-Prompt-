@@ -19,18 +19,18 @@
 
 The design direction is grounded in a **"light table / contact sheet"** concept: prompts are treated like frames on a photographer's light table — tagged with real parameters (`--ar 16:9`, `MJ v6.0`, `ChatGPT`, `DALL·E 3`) in `IBM Plex Mono` type.
 
-### Color Tokens
+### Color Tokens (Semantic)
 
 | Token | Hex | Purpose |
 | :--- | :--- | :--- |
-| `--ink` | `#14121A` | Page background (warm near-black, not pure black) |
-| `--surface` | `#1D1926` | Card background surface |
-| `--surface-2` | `#262131` | Hover / raised card states |
-| `--line` | `#37324A` | Hairlines, card borders |
+| `--background` | `#14121A` | Page background (warm near-black, not pure black) |
+| `--card` | `#1D1926` | Card background surface |
+| `--card-hover` | `#262131` | Hover / raised card states |
+| `--border` | `#37324A` | Hairlines, card borders |
 | `--paper` | `#F3F0FA` | Light CTA band background (the single high-contrast moment) |
-| `--coral` | `#FF6B4A` | Primary action color (Buttons, CTAs, copy triggers) |
-| `--mint` | `#83E6C9` | Secondary accent (Badges, parameters, status tags) |
-| `--text` | `#EDE9F7` | Primary text on dark |
+| `--primary` | `#FF6B4A` | Primary action color (Buttons, CTAs, copy triggers) |
+| `--secondary` | `#83E6C9` | Secondary accent (Badges, parameters, status tags) |
+| `--text-primary` | `#EDE9F7` | Primary text on dark |
 | `--text-muted` | `#A79FC4` | Secondary text on dark |
 
 ### Typography
@@ -47,7 +47,7 @@ The design direction is grounded in a **"light table / contact sheet"** concept:
 - Brand Mark: `CS` film frame + **AI Prompt Hub** wordmark
 - Links: `Explore Prompts`, `Features`, `How It Works`, `Become a Creator`
 - Actions: `Log in`, `Create free account` (or `User Portal` / `Creator Studio` / `Admin Portal` when authenticated)
-- Sticky, blurred backdrop (`#14121A`/95).
+- Sticky, blurred backdrop (`--background` /95).
 
 ### 2. 3D Fanned Editorial Hero (`components/Hero.tsx`)
 - **Top Section:** Centered Eyebrow badge (`LIGHT-TABLE PROMPT GALLERY`) + Single-color headline (`Discover & copy battle-tested AI image prompts.`) + Subtitle + Action buttons (`Explore Prompts` + `Create free account`).
@@ -71,17 +71,17 @@ The design direction is grounded in a **"light table / contact sheet"** concept:
 - 6 contact sheet cards with mono badges (`01 / PREVIEW`, `02 / COPY`, `03 / TAXONOMY`, `04 / VERIFIED`, `05 / CREATOR`, `06 / SPEED`).
 
 ### 5. Simple Workflow Section (`components/HowItWorks.tsx`)
-- 3 film-frame step counters (`01 / DISCOVER`, `02 / COPY`, `03 / GENERATE`) on a connecting hairline strip (`#37324A`).
+- 3 film-frame step counters (`01 / DISCOVER`, `02 / COPY`, `03 / GENERATE`) on a connecting hairline strip (`--border`).
 
 ### 6. Call to Action Banner (`components/CTASection.tsx`)
-- High-contrast paper band (`#F3F0FA`).
+- High-contrast paper band (`--paper`).
 - Headline: _"Your next prompt is one copy away."_
 - Subtext: _"Create a free account to save prompts, build a personal collection, and pick up where you left off."_
-- Buttons: _Create free account_ (primary coral `#FF6B4A`) · _Log in_ (secondary border button).
+- Buttons: _Create free account_ (primary coral `--primary`) · _Log in_ (secondary border button).
 
 ### 7. Minimal Footer (`components/Footer.tsx`)
 - Logo + description: _"A curated library of battle-tested AI image prompts — browse, copy syntax, and render."_
 - Copyright notice in `IBM Plex Mono`.
 
 ### 8. Custom 404 Page (`app/not-found.tsx`)
-- Dark theme matching `#14121A` background with frame counter `404 / MISSING` and return button.
+- Dark theme matching `--background` with frame counter `404 / MISSING` and return button.
