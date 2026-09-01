@@ -12,6 +12,7 @@ Provide administrators and content moderators with tools (`/admin`) to upload AI
 * **Routes:** `/admin`, `/admin/prompts`, `/admin/users`, `/admin/creators`, `/admin/admins`, `/admin/categories`, `/admin/roles`, `/admin/logs`, `/admin/settings`
 * **Theme Support:** Fully compatible with Light/Dark mode via `PortalSidebar`.
 * **Cache Invalidation:** Approving, rejecting, updating visibility, or deleting a prompt instantly calls `clearCachePattern('prompts:')` to invalidate public Redis cache queries.
+* **Security:** IP‑based rate limiting (5 attempts/60s) is enforced on `/api/auth/login` and `/api/auth/register`; CSRF protection is recommended for all state‑changing operations and will be added in a future update.
 
 ---
 
@@ -34,6 +35,20 @@ Provide administrators and content moderators with tools (`/admin`) to upload AI
 4. **Super Admin Management (`/admin/admins`, `/admin/roles`):**
    * Manage administrator credentials (`ADMIN_EMAIL`, `ADMIN_PASSWORD`).
    * Super Admin dynamic permission matrix (`super_admin`, `senior_admin`, `content_admin`, `moderator`).
+   * Permissions use the standardised `resource:action` naming (e.g., `prompt:approve`, `user:suspend`).
 
 5. **Audit Logs & Platform Settings (`/admin/logs`, `/admin/settings`):**
    * Historical record of moderation actions and system configuration settings.
+
+---
+
+## Cache Invalidation Matrix
+
+| Operation | Cache Pattern Invalidated | Affected Routes |
+|---|---|---|
+| Approve Prompt | `prompts:` | `/api/prompts`, `/api/admin/prompts` |
+| Reject Prompt | `prompts:` | `/api/prompts`, `/api/admin/prompts` |
+| Create Prompt | `prompts:` | `/api/prompts` |
+| Delete Prompt | `prompts:` | `/api/prompts`, `/api/admin/prompts` |
+| Update Visibility | `prompts:` | `/api/prompts` |
+| Update Category | `categories:` | `/api/categories` (if categories are cached) |

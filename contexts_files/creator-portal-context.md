@@ -11,7 +11,12 @@ The Creator Portal allows registered creators to create, manage, and submit AI p
 * **Status:** Fully built & themed using single Light-Table design system tokens.
 * **Routes:** `/creator`, `/creator/prompts`, `/creator/prompts/new`, `/creator/prompts/[id]/edit`, `/creator/profile`, `/creator/register`
 * **Theme Support:** Fully refactored to use semantic theme tokens (`bg-card`, `bg-background`, `border-border`, `text-foreground`, `text-muted-foreground`), supporting seamless Light/Dark mode toggling via `PortalSidebar`.
-* **Cache Invalidation:** Creating, editing, or deleting prompt drafts automatically invalidates the Redis cache pattern (`prompts:`).
+* **Cache Invalidation:** Creating, editing, or deleting prompt drafts automatically invalidates the Redis cache pattern `prompts:`. Specific triggers:
+  - `POST /api/creator/prompts` (create) → invalidates `prompts:`
+  - `PUT /api/creator/prompts/:id` (edit) → invalidates `prompts:`
+  - `DELETE /api/creator/prompts/:id` (delete) → invalidates `prompts:`
+  - Submitting for review (status change to `pending`) → also invalidates `prompts:`.
+* **Loading & Error States:** All form submissions and data fetches display skeleton loaders and clear error banners (e.g., on network failure or validation errors).
 
 ---
 
