@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Space_Grotesk, IBM_Plex_Sans, IBM_Plex_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { ThemeProvider } from '@/components/theme-provider'
+import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 
 const spaceGrotesk = Space_Grotesk({
@@ -31,15 +33,14 @@ export const metadata: Metadata = {
     'A curated library of tested AI image prompts for Midjourney, DALL·E 3, and Stable Diffusion. Browse, copy the exact syntax, and generate stunning AI artwork.',
   icons: {
     icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
       { url: '/icon-light-32x32.png', media: '(prefers-color-scheme: light)' },
       { url: '/icon-dark-32x32.png', media: '(prefers-color-scheme: dark)' },
-      { url: '/icon.svg', type: 'image/svg+xml' },
     ],
-    apple: '/apple-icon.png',
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
   },
 }
-
-import { ThemeProvider } from '@/components/theme-provider'
 
 export default function RootLayout({
   children,
@@ -53,6 +54,7 @@ export default function RootLayout({
       >
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           {children}
+          <Toaster position="top-right" richColors closeButton />
         </ThemeProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>

@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowRight, Lock, Mail, User, Loader2, Sparkles, Wand2, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Lock, Mail, User, Loader2, Sparkles, Wand2, ShieldCheck, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
+import { getFriendlyErrorMessage } from '@/lib/errors';
 
 type Mode = 'login' | 'register' | 'creator-register';
 
@@ -83,13 +85,27 @@ export default function AuthForm({ mode }: AuthFormProps) {
         body:    JSON.stringify(body),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Something went wrong');
+      if (!res.ok) {
+        const errorMsg = getFriendlyErrorMessage(data.error || 'Authentication failed');
+        throw new Error(errorMsg);
+      }
 
       const role    = data.user?.role ?? 'user';
       const redirect = ROLE_REDIRECT[role] ?? '/dashboard';
+      
+      toast.success(
+        isLogin
+          ? `Welcome back, ${data.user?.name || 'User'}!`
+          : isCreatorMode
+          ? 'Creator application submitted successfully!'
+          : 'Account created successfully!'
+      );
+
       router.push(redirect);
     } catch (err: any) {
-      setError(err.message);
+      const friendlyMsg = getFriendlyErrorMessage(err);
+      setError(friendlyMsg);
+      toast.error(friendlyMsg);
     } finally {
       setLoading(false);
     }
@@ -164,8 +180,12 @@ export default function AuthForm({ mode }: AuthFormProps) {
         {/* Card */}
         <div className="rounded-2xl border border-border/60 bg-card p-8 shadow-sm space-y-5">
           {error && (
-            <div className="rounded-xl border border-destructive/20 bg-destructive/10 p-4 text-xs font-medium text-destructive">
-              {error}
+            <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-xs font-medium text-destructive flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="font-semibold">Authentication Notice</p>
+                <p className="text-muted-foreground text-[11px] leading-relaxed">{error}</p>
+              </div>
             </div>
           )}
 

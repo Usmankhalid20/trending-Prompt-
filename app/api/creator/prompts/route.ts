@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { getSession } from '@/lib/auth';
+import { clearCachePattern } from '@/lib/redis';
 import { ObjectId } from 'mongodb';
 
 async function requireCreator() {
@@ -68,5 +69,9 @@ export async function POST(req: NextRequest) {
   };
 
   const result = await col.insertOne(doc);
+
+  // Invalidate prompts cache in Redis
+  await clearCachePattern('prompts:');
+
   return NextResponse.json({ message: submitForReview ? 'Submitted for review' : 'Saved as draft', promptId: result.insertedId }, { status: 201 });
 }

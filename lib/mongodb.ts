@@ -1,12 +1,16 @@
 import { MongoClient, type MongoClientOptions } from "mongodb";
 
 if (!process.env.MONGODB_URI) {
-  throw new Error("Please add your Mongo URI to .env.local");
+  throw new Error("Please add your Mongo URI to .env");
 }
 
 const uri = process.env.MONGODB_URI;
 const options: MongoClientOptions = {
-  serverSelectionTimeoutMS: 10000,
+  serverSelectionTimeoutMS: 5000,
+  connectTimeoutMS: 10000,
+  socketTimeoutMS: 45000,
+  maxPoolSize: 10,
+  minPoolSize: 0,
 };
 
 declare global {

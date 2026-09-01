@@ -6,6 +6,8 @@ import { ArrowLeft, Save, Send, Loader2, AlertCircle, Upload, Trash2, Image as I
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import { getFriendlyErrorMessage } from '@/lib/errors';
 
 const CATEGORIES = ['Couple Portraits', 'Editorial / Dress', 'Fantasy Scenes', 'Architecture', 'Abstract', 'Nature', 'General'];
 
@@ -74,6 +76,7 @@ export default function PromptForm({
         const data = await res.json();
         if (data.url) {
           setValues((v) => ({ ...v, image: data.url }));
+          toast.success('Artwork preview uploaded successfully');
           return;
         }
       }
@@ -83,6 +86,7 @@ export default function PromptForm({
       reader.onload = () => {
         if (reader.result) {
           setValues((v) => ({ ...v, image: reader.result as string }));
+          toast.success('Artwork loaded successfully');
         }
       };
       reader.readAsDataURL(file);
@@ -99,17 +103,30 @@ export default function PromptForm({
     }
   };
 
+  const handleRemoveImage = () => {
+    setValues((v) => ({ ...v, image: '' }));
+  };
+
   const handleAction = async (submitForReview: boolean) => {
     if (!values.title.trim() || !values.prompt.trim()) {
-      setError('Title and prompt content are required.');
+      const msg = 'Title and prompt content are required.';
+      setError(msg);
+      toast.error(msg);
       return;
     }
     setLoading(true);
     setError(null);
     try {
       await onSubmit(values, submitForReview);
+      toast.success(
+        submitForReview
+          ? 'Prompt submitted for review successfully!'
+          : 'Prompt draft saved successfully!'
+      );
     } catch (err: any) {
-      setError(err.message);
+      const friendlyMsg = getFriendlyErrorMessage(err);
+      setError(friendlyMsg);
+      toast.error(friendlyMsg);
     } finally {
       setLoading(false);
     }
@@ -156,8 +173,9 @@ export default function PromptForm({
 
       {/* Error Notice */}
       {error && (
-        <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 text-xs text-destructive font-medium">
-          {error}
+        <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 text-xs text-destructive font-medium flex items-start gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+          <span>{error}</span>
         </div>
       )}
 
@@ -199,44 +217,42 @@ export default function PromptForm({
           </select>
         </div>
 
-        {/* Image Upload Field */}
+        {/* Artwork Image Upload */}
         <div className="space-y-2">
           <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-mono">
-            Prompt Sample Artwork Image
+            Artwork Sample Image
           </label>
+          
           {values.image ? (
-            <div className="relative w-full max-h-72 rounded-xl overflow-hidden border border-border bg-background flex items-center justify-center">
+            <div className="relative rounded-xl overflow-hidden border border-border bg-muted/20 group w-full max-w-sm aspect-16/9 flex items-center justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={values.image} alt="Prompt Artwork Preview" className="max-h-72 object-contain w-full" />
+              <img
+                src={values.image}
+                alt="Uploaded preview"
+                className="w-full h-full object-cover"
+              />
               {!readonly && (
-                <Button
+                <button
                   type="button"
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => setValues((v) => ({ ...v, image: '' }))}
-                  className="absolute top-3 right-3 gap-1.5 shadow-md"
+                  onClick={handleRemoveImage}
+                  className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/70 text-white hover:bg-destructive hover:text-white transition-colors"
+                  title="Remove image"
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  Remove Image
-                </Button>
+                  <Trash2 className="h-4 w-4" />
+                </button>
               )}
             </div>
           ) : (
-            <div className="relative">
-              <label
-                htmlFor="pf-image-file"
-                className={`flex flex-col items-center justify-center gap-2.5 p-8 rounded-xl border-2 border-dashed border-border/80 bg-background/50 transition-colors ${
-                  readonly || uploading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:border-primary/50'
-                }`}
-              >
-                {uploading ? (
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                ) : (
-                  <div className="h-10 w-10 rounded-xl bg-secondary flex items-center justify-center border border-border">
-                    <Upload className="h-5 w-5 text-primary" />
-                  </div>
-                )}
-                <div className="text-center">
+            <div className="border-2 border-dashed border-border hover:border-primary/50 transition-colors rounded-xl p-6 text-center cursor-pointer bg-muted/10">
+              <label htmlFor="pf-image-file" className="cursor-pointer block space-y-2">
+                <div className="flex justify-center text-muted-foreground">
+                  {uploading ? (
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  ) : (
+                    <ImageIcon className="h-8 w-8 text-primary/70" />
+                  )}
+                </div>
+                <div>
                   <p className="text-sm font-semibold text-foreground">
                     {uploading ? 'Uploading image...' : 'Click or Drag image to upload artwork sample'}
                   </p>

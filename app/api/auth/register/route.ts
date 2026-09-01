@@ -5,6 +5,7 @@ import { encryptPayload } from '@/lib/auth';
 import { DEFAULT_ROLE_PERMISSIONS } from '@/lib/models/role';
 import { UserStatus } from '@/lib/models/user';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { getFriendlyErrorMessage } from '@/lib/errors';
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,7 +13,7 @@ export async function POST(req: NextRequest) {
     const rateLimit = checkRateLimit(`register:${ip}`, 5, 60 * 1000);
     if (!rateLimit.success) {
       return NextResponse.json(
-        { error: 'Too many registration requests. Please try again in 1 minute.' },
+        { error: 'Too many registration requests. Please wait a minute and try again.' },
         { status: 429 }
       );
     }
@@ -42,7 +43,7 @@ export async function POST(req: NextRequest) {
 
     if (existingUser) {
       return NextResponse.json(
-        { error: 'An account with this email already exists' },
+        { error: 'An account with this email address already exists. Please sign in instead.' },
         { status: 409 }
       );
     }
@@ -96,6 +97,7 @@ export async function POST(req: NextRequest) {
       value: token,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
       path: '/',
       maxAge: 60 * 60 * 24, // 24 hours
     });
@@ -103,8 +105,9 @@ export async function POST(req: NextRequest) {
     return res;
   } catch (error: any) {
     console.error('Registration error:', error);
+    const friendlyMessage = getFriendlyErrorMessage(error);
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: friendlyMessage },
       { status: 500 }
     );
   }

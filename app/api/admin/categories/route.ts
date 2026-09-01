@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { getSession, hasPermission } from '@/lib/auth';
+import { clearCachePattern } from '@/lib/redis';
 import { ObjectId } from 'mongodb';
 
 export async function GET() {
@@ -51,6 +52,10 @@ export async function POST(req: NextRequest) {
     };
 
     const res = await categoriesCollection.insertOne(newCategory);
+
+    // Invalidate Redis categories cache
+    await clearCachePattern('categories:');
+
     return NextResponse.json({ ...newCategory, _id: res.insertedId }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -73,6 +78,9 @@ export async function DELETE(req: NextRequest) {
     const client = await clientPromise;
     const db = client.db();
     await db.collection('categories').deleteOne({ _id: new ObjectId(id) });
+
+    // Invalidate Redis categories cache
+    await clearCachePattern('categories:');
 
     return NextResponse.json({ message: 'Category deleted' });
   } catch (error: any) {
