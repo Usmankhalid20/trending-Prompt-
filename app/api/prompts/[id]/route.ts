@@ -6,6 +6,48 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+
+  try {
+    const client = await getMongoClient();
+    const db = client.db();
+
+    let query: any = {};
+    if (ObjectId.isValid(id)) {
+      query = { _id: new ObjectId(id) };
+    } else {
+      query = { _id: id };
+    }
+
+    const prompt = await db.collection('prompts').findOne(query);
+
+    if (!prompt) {
+      return apiErrorResponse({
+        status: 404,
+        code: 'PROMPT_NOT_FOUND',
+        userMessage: 'We could not find that prompt.',
+        developerMessage: `No prompt matched id ${id}.`,
+        context: 'Prompt fetch not found',
+      });
+    }
+
+    return NextResponse.json(prompt);
+  } catch (error) {
+    return apiErrorResponse({
+      status: 500,
+      code: 'PROMPT_FETCH_FAILED',
+      userMessage: 'We could not load that prompt. Please try again.',
+      developerMessage: 'Failed to fetch prompt from MongoDB.',
+      error,
+      context: 'Error fetching prompt',
+    });
+  }
+}
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

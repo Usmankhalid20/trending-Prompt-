@@ -1,5 +1,5 @@
 import { SignJWT, jwtVerify } from 'jose';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { ObjectId } from 'mongodb';
@@ -298,9 +298,26 @@ export function clearAuthCookies(res: NextResponse): void {
 }
 
 /**
- * Retrieves and validates the current active user session
+ * Retrieves and validates the current active user session.
+ * Supports both Authorization: Bearer <token> (Mobile Apps) and HttpOnly Cookie (Web).
  */
 export async function getSession(): Promise<SessionPayload | null> {
+  // 1. Check Authorization Bearer header (Mobile App / API Clients)
+  try {
+    const headersList = await headers();
+    const authHeader = headersList.get('authorization') || headersList.get('Authorization');
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const bearerToken = authHeader.substring(7).trim();
+      if (bearerToken) {
+        const payload = await decryptToken(bearerToken);
+        if (payload) return payload;
+      }
+    }
+  } catch (e) {
+    // Non-fatal, proceed to cookie inspection
+  }
+
+  // 2. Fallback to HttpOnly session cookie (Web Browsers)
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   if (!sessionToken) return null;

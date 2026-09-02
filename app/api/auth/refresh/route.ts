@@ -47,6 +47,8 @@ export async function POST(req: NextRequest) {
         status: result.sessionPayload.status,
         permissions: result.sessionPayload.permissions,
       },
+      accessToken: result.accessToken,
+      refreshToken: result.newRefreshToken,
     });
 
     // Set updated Access Token (15m) + Rotated Refresh Token (7d)

@@ -104,6 +104,8 @@ export async function POST(req: NextRequest) {
         status: user.status || 'active',
         permissions,
       },
+      accessToken,
+      refreshToken,
     });
 
     // 3. Set HttpOnly security cookies (session & refreshToken)

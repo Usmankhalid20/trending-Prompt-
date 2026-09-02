@@ -93,6 +93,8 @@ export async function POST(req: NextRequest) {
           role: newUser.role,
           status: newUser.status,
         },
+        accessToken,
+        refreshToken,
       },
       { status: 201 }
     );
