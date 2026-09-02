@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { hashPassword } from '@/lib/password';
-import { encryptPayload } from '@/lib/auth';
+import { encryptPayload, createRefreshToken, setAuthCookies } from '@/lib/auth';
 import { DEFAULT_ROLE_PERMISSIONS } from '@/lib/models/role';
 import { UserStatus } from '@/lib/models/user';
 import { checkRateLimit } from '@/lib/rate-limit';
@@ -66,15 +66,20 @@ export async function POST(req: NextRequest) {
     const userId = result.insertedId.toString();
 
     const permissions = DEFAULT_ROLE_PERMISSIONS[assignedRole] ?? [];
+    const userAgent = req.headers.get('user-agent') || 'unknown';
 
-    const token = await encryptPayload({
+    // 1. Generate short-lived Access Token (15m)
+    const accessToken = await encryptPayload({
       userId,
       email: newUser.email,
       name: newUser.name,
       role: assignedRole,
       status: assignedStatus,
       permissions,
-    });
+    }, '15m');
+
+    // 2. Generate and persist long-lived Refresh Token (7 days) in DB
+    const refreshToken = await createRefreshToken(userId, { userAgent, ip });
 
     const res = NextResponse.json(
       {
@@ -88,19 +93,14 @@ export async function POST(req: NextRequest) {
           role: newUser.role,
           status: newUser.status,
         },
+        accessToken,
+        refreshToken,
       },
       { status: 201 }
     );
 
-    res.cookies.set({
-      name: 'session',
-      value: token,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24, // 24 hours
-    });
+    // 3. Set HttpOnly security cookies (session & refreshToken)
+    setAuthCookies(res, accessToken, refreshToken);
 
     return res;
   } catch (error: any) {

@@ -2,51 +2,54 @@
 
 ## 🎯 Executive Summary
 
-**AI Trending Prompts** is a modern, high-performance web platform designed to serve as a centralized hub and marketplace for discovering, sharing, testing, and managing high-quality AI prompts across top generative AI models (ChatGPT, Midjourney, Claude, DALL-E 3, Gemini, Stable Diffusion, and custom LLMs).
+**AI Prompt Hub** (AI Trending Prompts) is a modern, production-ready web platform and marketplace designed for discovering, testing, copying, and publishing high-fidelity AI image and LLM prompts across leading generative AI models including **Midjourney v6**, **DALL·E 3**, **Stable Diffusion (SDXL)**, **ChatGPT**, and **Claude**.
 
-The platform connects **Prompt Creators** who design effective prompts with **AI Users** looking for optimized instructions to achieve high-quality AI outputs, while providing **Administrators** with robust moderation, role management, and analytics tools.
+The platform connects **Prompt Creators** who engineer tested prompt recipes with **AI Designers & Artists** seeking reliable instructions with exact aspect ratio flags and model weights, while providing **Administrators** with multi-tier moderation queues, role-based access controls, and analytics tools.
 
 ---
 
 ## 💡 Background & Motivation
 
-Generative AI capabilities have advanced rapidly, but unlocking their full potential requires precise **Prompt Engineering**. Most users struggle with trial-and-error, resulting in generic or broken outputs. Meanwhile, talented prompt engineers have limited platforms to showcase, structure, and share their battle-tested prompts.
+Generative AI image models require precise **Prompt Engineering** with model-specific syntax, stylize values, aspect ratio parameters, and weight modifiers. Most users struggle with trial-and-error across random blogs, Pinterest, or Discord channels, resulting in wasted generation credits and inconsistent outputs.
 
-### Why We Built This Project
+### Core Value Pillars
 
-1. **Eliminate Prompt Engineering Friction:** Save users hours of trial-and-error by providing curated, copy-ready prompts with visual examples and parameter guides.
-2. **Empower Creator Community:** Give creators a dedicated portal to submit, track, and showcase their custom prompt recipes.
-3. **Ensure High Content Quality:** Prevent spam, broken prompts, and low-quality submissions through an admin review and moderation pipeline.
-4. **Deliver Sub-50ms Response Times:** Utilize a hybrid Redis caching layer to deliver near-instant prompt retrieval, even under heavy search and filter operations.
+1. **Find Prompts That Actually Work:** Save creators hours of trial-and-error with curated, copy-ready prompt syntax containing verified parameters.
+2. **High-Resolution Visual Proof:** Every prompt card features authentic renders produced by the exact prompt syntax.
+3. **Multi-Dimensional Discovery:** Filter prompts simultaneously by Domain/Style, Target AI Model, Aspect Ratio (`16:9`, `4:5`, `3:4`, `1:1`), and Popularity.
+4. **Enterprise Dual-Token Security:** Secure short-lived Access Tokens (15m) paired with database-backed Refresh Tokens (7d) featuring Refresh Token Rotation (RTR).
+5. **Creator Publishing Studio:** Dedicated portal for prompt engineers to publish recipes, track approval status, and build public portfolios.
+6. **Sub-50ms Response Times:** Redis caching layer reducing database fetch times from 1,300ms down to ~40ms with graceful in-memory fallback.
 
 ---
 
-## 🛠️ Problems Solved
+## 🛠️ Problems Solved & Differentiators
 
-| Problem in Market | Solution Provided by AI Trending Prompts |
+| Random Prompt Websites & Social Media (✕) | AI Prompt Hub Solution (✓) |
 | :--- | :--- |
-| **Fragmented Prompt Sources** | Centralized, searchable directory categorized by AI Model (ChatGPT, Midjourney, Claude, etc.) and Domain (Marketing, Coding, Design, Copywriting). |
-| **Low Quality & Spam** | Multi-tier approval workflow (`pending` -> `approved`/`rejected`) enforced by Admin/Super-Admin roles before public visibility. |
-| **Slow Search & Latency** | Redis cache integration (`getCache`/`setCache`) invalidating on mutation, reducing fetch latency from 1,300ms down to ~40ms. |
-| **Lack of Visual Proof** | Cloudinary image upload integration allowing creators to attach exact visual outputs (e.g., Midjourney renders) for every prompt. |
-| **Role Ambiguity** | Granular JWT-backed authentication supporting **User**, **Creator**, **Admin**, and **Super Admin** roles with distinct permissions. |
+| **Generic & Broken Syntax** | Model-specific prompts calibrated for Midjourney v6, DALL·E 3, SDXL. |
+| **Missing or Stock Previews** | Real high-resolution visual preview render for every recipe. |
+| **Missing Parameter Flags** | 1-click copy with complete flags (`--ar`, `--stylize`, `--v`, seeds, weights). |
+| **Unmoderated Junk Submissions** | Multi-tier Admin/Moderator approval workflow before public visibility. |
+| **Scattered Bookmarks** | Personal workspace with saved collections and creator studio dashboard. |
+| **Vulnerable Auth / Broken Sessions** | `HttpOnly` dual-token authentication with automatic silent refresh. |
 
 ---
 
 ## 👥 Target Audience & User Roles
 
-### 1. Public Users & AI Enthusiasts
-- Browse trending prompts by popularity, category, or AI model.
-- Search prompts with instant regex matching and filters.
-- Copy prompt text to clipboard with one click.
-- View detailed modal cards containing prompt variables and preview images.
+### 1. Public Users & AI Designers
+- Explore prompt recipes across **Editor's Picks**, **Trending**, **Popular**, and **Newest** tabs.
+- Filter by category (*Architecture, Editorial / Portrait, Cinematic, Abstract*), AI Model, and Aspect Ratio.
+- 1-click prompt copying with instant clipboard toast confirmation.
+- Inspect full prompt syntax, variables, and model specifications via detailed modals.
 
 ### 2. Prompt Creators
-- Register through a dedicated Creator portal (`/creator/register`).
-- Submit custom prompts with title, instructions, target AI model, category, and output image.
-- Track submission status (`pending`, `approved`, `rejected`) in their creator dashboard.
+- Register through dedicated creator onboarding (`/creator/register`).
+- Submit prompt recipes with title, body, aspect ratio, AI model, category, and Cloudinary preview image.
+- Track submission moderation status (`pending`, `approved`, `rejected`) in the Creator Studio.
 
-### 3. Admins & Super Admins
-- Review pending prompt submissions with approve/reject actions.
-- Edit, hide, or delete prompts in real-time.
-- Manage user roles, toggle account status (`active`, `suspended`), and access platform analytics.
+### 3. Administrators & Moderators
+- Moderate pending prompt submissions with one-click approve/reject/hide actions.
+- Granular permission-based RBAC: `super_admin`, `senior_admin`, `content_admin`, `moderator`.
+- Manage user accounts, toggle suspension status, and view real-time audit logs.
