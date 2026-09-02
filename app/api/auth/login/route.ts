@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { verifyPassword } from '@/lib/password';
-import { encryptPayload, ensureSuperAdmin } from '@/lib/auth';
+import { encryptPayload, createRefreshToken, setAuthCookies, ensureSuperAdmin } from '@/lib/auth';
 import { DEFAULT_ROLE_PERMISSIONS } from '@/lib/models/role';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { getFriendlyErrorMessage } from '@/lib/errors';
@@ -79,16 +79,20 @@ export async function POST(req: NextRequest) {
     }
 
     const userId = user._id.toString();
+    const userAgent = req.headers.get('user-agent') || 'unknown';
 
-    // Generate JWT token
-    const token = await encryptPayload({
+    // 1. Generate short-lived Access Token (15m)
+    const accessToken = await encryptPayload({
       userId,
       email: user.email,
       name: user.name,
       role: user.role,
       status: user.status || 'active',
       permissions,
-    });
+    }, '15m');
+
+    // 2. Generate and persist long-lived Refresh Token (7 days) in DB
+    const refreshToken = await createRefreshToken(userId, { userAgent, ip });
 
     const res = NextResponse.json({
       message: 'Login successful',
@@ -102,15 +106,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    res.cookies.set({
-      name: 'session',
-      value: token,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24, // 24 hours
-    });
+    // 3. Set HttpOnly security cookies (session & refreshToken)
+    setAuthCookies(res, accessToken, refreshToken);
 
     return res;
   } catch (error: any) {

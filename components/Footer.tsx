@@ -9,7 +9,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-[#14121A] border-t border-[#37324A] pt-16 pb-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <footer className="bg-card border-t border-border pt-16 pb-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden transition-colors duration-200">
       
       {/* Background Subtle Accent Overlay */}
       <div
@@ -28,73 +28,67 @@ export default function Footer() {
               href="/"
               className="inline-flex items-center gap-2.5 group focus-visible:outline-none"
             >
-              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#FF6B4A] text-[#14121A] font-mono font-extrabold text-xs shadow-md transition-transform group-hover:scale-105">
+              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary text-primary-foreground font-mono font-extrabold text-xs shadow-md transition-transform group-hover:scale-105">
                 CS
               </span>
-              <span className="font-display font-extrabold text-lg text-[#EDE9F7] tracking-tight">
+              <span className="font-display font-extrabold text-lg text-foreground tracking-tight">
                 AI Prompt Hub
               </span>
             </Link>
 
-            <p className="font-sans text-sm text-[#A79FC4] leading-relaxed max-w-sm">
+            <p className="font-sans text-sm text-muted-foreground leading-relaxed max-w-sm">
               A curated light-table library &amp; battle-tested prompt engineering marketplace for Midjourney, DALL·E 3, Stable Diffusion, and ChatGPT.
             </p>
-
-            {/* System Status Pill */}
-            {/* <div className="inline-flex items-center gap-2 rounded-md border border-[#83E6C9]/30 bg-[#83E6C9]/10 px-3 py-1 text-xs font-mono font-medium text-[#83E6C9]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#83E6C9] animate-pulse" />
-              <span>SYSTEM OPERATIONAL • REDIS CACHE ACTIVE</span>
-            </div> */}
           </div>
 
           {/* Nav Column 1: Explore Prompts (2 cols) */}
-          <div className="md:col-span-2 space-y-3">
-            <h3 className="font-mono text-xs font-semibold text-[#EDE9F7] uppercase tracking-wider">
+          <div className="md:col-span-2 space-y-3 text-left">
+            <h3 className="font-mono text-xs font-semibold text-foreground uppercase tracking-wider">
               EXPLORE
             </h3>
-            <ul className="space-y-2 font-sans text-xs text-[#A79FC4]">
+            <ul className="space-y-2 font-sans text-xs text-muted-foreground">
               <li>
-                <a href="#explore" className="hover:text-[#FF6B4A] transition-colors">Midjourney Recipes</a>
+                <a href="#explore" className="hover:text-primary transition-colors">Midjourney Recipes</a>
               </li>
               <li>
-                <a href="#explore" className="hover:text-[#FF6B4A] transition-colors">DALL·E 3 Prompts</a>
+                <a href="#explore" className="hover:text-primary transition-colors">DALL·E 3 Prompts</a>
               </li>
               <li>
-                <a href="#explore" className="hover:text-[#FF6B4A] transition-colors">Stable Diffusion</a>
+                <a href="#explore" className="hover:text-primary transition-colors">Stable Diffusion</a>
               </li>
               <li>
-                <a href="#explore" className="hover:text-[#FF6B4A] transition-colors">Editorial &amp; Fashion</a>
+                <a href="#explore" className="hover:text-primary transition-colors">Editorial &amp; Fashion</a>
               </li>
               <li>
-                <a href="#explore" className="hover:text-[#FF6B4A] transition-colors">Architecture Renders</a>
+                <a href="#explore" className="hover:text-primary transition-colors">Architecture Renders</a>
               </li>
             </ul>
           </div>
 
           {/* Nav Column 2: Ecosystem Portals (3 cols) */}
-          <div className="md:col-span-3 space-y-3">
-            <h3 className="font-mono text-xs font-semibold text-[#EDE9F7] uppercase tracking-wider">
+          <div className="md:col-span-3 space-y-3 text-left">
+            <h3 className="font-mono text-xs font-semibold text-foreground uppercase tracking-wider">
               PORTALS &amp; PLATFORM
             </h3>
-            <ul className="space-y-2 font-sans text-xs text-[#A79FC4]">
+            <ul className="space-y-2 font-sans text-xs text-muted-foreground">
               <li>
-                <Link href="/creator/register" className="hover:text-[#FF6B4A] transition-colors flex items-center gap-1.5">
+                <Link href="/creator/register" className="hover:text-primary transition-colors flex items-center gap-1.5">
                   <span>Become a Creator</span>
-                  <span className="font-mono text-[9px] bg-[#FF6B4A]/10 text-[#FF6B4A] px-1.5 py-0.5 rounded border border-[#FF6B4A]/30">STUDIO</span>
+                  <span className="font-mono text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded border border-primary/30">STUDIO</span>
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard" className="hover:text-[#FF6B4A] transition-colors">User Workspace</Link>
+                <Link href="/dashboard" className="hover:text-primary transition-colors">User Workspace</Link>
               </li>
               <li>
-                <Link href="/creator" className="hover:text-[#FF6B4A] transition-colors">Creator Studio Dashboard</Link>
+                <Link href="/creator" className="hover:text-primary transition-colors">Creator Studio Dashboard</Link>
               </li>
               <li>
-                <Link href="/admin" className="hover:text-[#FF6B4A] transition-colors">Admin Moderation Queue</Link>
+                <Link href="/admin" className="hover:text-primary transition-colors">Admin Moderation Queue</Link>
               </li>
               <li>
-                <Link href="/docs" className="hover:text-[#83E6C9] transition-colors flex items-center gap-1">
-                  <ShieldCheck className="h-3 w-3 text-[#83E6C9]" />
+                <Link href="/docs" className="hover:text-emerald-600 dark:hover:text-[#83E6C9] transition-colors flex items-center gap-1">
+                  <ShieldCheck className="h-3 w-3 text-emerald-600 dark:text-[#83E6C9]" />
                   <span>Technical Documentation</span>
                 </Link>
               </li>
@@ -102,22 +96,22 @@ export default function Footer() {
           </div>
 
           {/* Nav Column 3: Trust & Specs (2 cols) */}
-          <div className="md:col-span-2 space-y-3">
-            <h3 className="font-mono text-xs font-semibold text-[#EDE9F7] uppercase tracking-wider">
+          <div className="md:col-span-2 space-y-3 text-left">
+            <h3 className="font-mono text-xs font-semibold text-foreground uppercase tracking-wider">
               SPECS &amp; LEGAL
             </h3>
-            <ul className="space-y-2 font-sans text-xs text-[#A79FC4]">
+            <ul className="space-y-2 font-sans text-xs text-muted-foreground">
               <li>
-                <span className="text-[#A79FC4]/80">Privacy Policy</span>
+                <span className="text-muted-foreground/80">Privacy Policy</span>
               </li>
               <li>
-                <span className="text-[#A79FC4]/80">Terms of Service</span>
+                <span className="text-muted-foreground/80">Terms of Service</span>
               </li>
               <li>
-                <span className="text-[#A79FC4]/80">API v1.0 Docs</span>
+                <span className="text-muted-foreground/80">API v1.0 Docs</span>
               </li>
               <li>
-                <span className="font-mono text-[10px] text-[#83E6C9]/80">VERIFIED SYNTAX</span>
+                <span className="font-mono text-[10px] text-emerald-600 dark:text-[#83E6C9]">VERIFIED SYNTAX</span>
               </li>
             </ul>
           </div>
@@ -125,13 +119,12 @@ export default function Footer() {
         </div>
 
         {/* ── BOTTOM BAR: Film Contact Sheet Footer Bar ── */}
-        <div className="pt-8 border-t border-[#37324A]/70 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-[#A79FC4]">
+        <div className="pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-muted-foreground">
           
           {/* Copyright & Film Mark */}
           <div className="flex items-center gap-2 text-center sm:text-left">
             <span>&copy; {new Date().getFullYear()} AI Prompt Hub.</span>
-            <span className="hidden sm:inline text-[#37324A]">•</span>
-            {/* <span className="text-[#83E6C9]">CS·LIGHT-TABLE-PROMPT-ENGINEERING</span> */}
+            <span className="hidden sm:inline text-border">•</span>
           </div>
 
           {/* Social Icons & Back to Top Trigger */}
@@ -141,7 +134,7 @@ export default function Footer() {
               target="_blank"
               rel="noreferrer"
               aria-label="GitHub Repository"
-              className="text-[#A79FC4] hover:text-[#EDE9F7] transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <Github className="h-4 w-4" />
             </a>
@@ -150,7 +143,7 @@ export default function Footer() {
               target="_blank"
               rel="noreferrer"
               aria-label="Twitter Community"
-              className="text-[#A79FC4] hover:text-[#EDE9F7] transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <Twitter className="h-4 w-4" />
             </a>
@@ -159,17 +152,17 @@ export default function Footer() {
               target="_blank"
               rel="noreferrer"
               aria-label="Discord Channel"
-              className="text-[#A79FC4] hover:text-[#EDE9F7] transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <Discord className="h-4 w-4" />
             </a>
 
-            <div className="h-3 w-px bg-[#37324A]" aria-hidden="true" />
+            <div className="h-3 w-px bg-border" aria-hidden="true" />
 
             {/* Back to top Button */}
             <button
               onClick={scrollToTop}
-              className="inline-flex items-center gap-1 text-[#A79FC4] hover:text-[#FF6B4A] transition-colors font-mono text-xs"
+              className="inline-flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors font-mono text-xs"
               aria-label="Scroll to top of page"
             >
               <span>TOP</span>
