@@ -2,97 +2,119 @@
 
 ## 📋 Prerequisites
 
-Before running the project locally, ensure you have the following installed:
+Ensure your development environment meets the following requirements:
 
-* **Node.js**: v18.x or v20.x installed.
-* **Package Manager**: `npm` or `pnpm`.
-* **Docker Desktop**: Installed and running (required for local Redis container).
-* **MongoDB Atlas Account**: Database connection string.
-* **Cloudinary Account**: Cloud name, API key, and API secret for image storage.
+* **Node.js**: v18.x, v20.x, or v22.x installed.
+* **Package Manager**: `npm`, `pnpm`, or `yarn`.
+* **Docker Desktop**: Installed and running (for local Redis container & Redis Commander GUI).
+* **MongoDB Atlas Account**: Connection URI string.
+* **Cloudinary Account**: Cloud Name, API Key, and API Secret for image hosting.
+* **Upstash Redis Account** *(Optional for production on Vercel)*: Serverless Redis REST URL and Token.
 
 ---
 
 ## 🔑 Environment Configuration
 
-Create a `.env` file in the root directory ([`AiTrendingPrompts/.env`](file:///c:/Users/usman/Documents/AiTrendingPrompts/AiTrendingPrompts/.env)) based on [.env.local.example](file:///c:/Users/usman/Documents/AiTrendingPrompts/AiTrendingPrompts/.env.local.example):
+Create a `.env` file in the project root:
 
 ```env
-# MongoDB Connection String
-MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/?appName=Cluster0
+# ── MongoDB Database Connection ──
+MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/ai_prompt_hub?retryWrites=true&w=majority
 
-# Admin Default Credentials & Security
-ADMIN_EMAIL=admin@gmail.com
-ADMIN_PASSWORD=your-secure-password
-JWT_SECRET=TRENDING_PROMPT_SECRET_KEY
+# ── Admin Default Credentials & JWT Secret ──
+ADMIN_EMAIL=admin@aiprompthub.com
+ADMIN_PASSWORD=AdminPass123!
+JWT_SECRET=super-secure-production-jwt-secret-key-2026
 
-# Cloudinary Assets Storage
+# ── Cloudinary Image Asset Storage ──
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 
-# Redis Cache Connection
+# ── Redis Cache Connection ──
+# Local Docker Redis:
 REDIS_URL=redis://localhost:6379
+
+# Production Upstash Serverless Redis (Vercel):
+# UPSTASH_REDIS_REST_URL=https://your-db.upstash.io
+# UPSTASH_REDIS_REST_TOKEN=your_token_here
 ```
 
 ---
 
-## 🐳 Docker Infrastructure (Redis & GUI)
+## 🐳 Docker Infrastructure (Local Redis & GUI)
 
-The project includes a production-ready [`docker-compose.yml`](file:///c:/Users/usman/Documents/AiTrendingPrompts/AiTrendingPrompts/docker-compose.yml) file.
+The project includes a [`docker-compose.yml`](file:///c:/Users/usman/Documents/AiTrendingPrompts/AiTrendingPrompts/docker-compose.yml) stack for local development.
 
-### Starting Local Redis & Web GUI
+### Starting the Local Redis Stack
 
-1. Launch **Docker Desktop** on your computer.
-2. Run the following command in your terminal:
+1. Open **Docker Desktop**.
+2. Start the background containers:
    ```bash
    docker compose up -d
    ```
-3. Verify running containers:
+3. Check container health:
    ```bash
    docker compose ps
    ```
-4. Access **Redis Commander Web GUI**:
-   Open `http://localhost:8081` in your browser to inspect Redis cache keys visually.
+4. **Access Redis Commander Web GUI:**
+   Open `http://localhost:8081` in your browser to inspect cached prompt keys visually.
 
 ---
 
 ## 💻 Local Development Workflow
 
-1. **Install Dependencies:**
-   ```bash
-   npm install
-   ```
-2. **Start Docker Redis Stack:**
-   ```bash
-   docker compose up -d
-   ```
-3. **Run Next.js Development Server:**
-   ```bash
-   npm run dev
-   ```
-4. Open `http://localhost:3000` in your browser.
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Start local Redis (Docker)
+docker compose up -d
+
+# 3. Launch Next.js dev server with Turbopack
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 ---
 
 ## 🚨 Troubleshooting Common Issues
 
-### Issue 1: `open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified`
-* **Cause:** Docker Desktop background service (`com.docker.service`) is closed or stopped.
-* **Fix:** Open Windows Start Menu -> Search **Docker Desktop** -> Right-Click -> **Run as Administrator**. Wait until Docker displays "Engine Running" before running `docker compose up -d`.
+### Issue 1: `SSL alert number 80` or `MongoServerSelectionError`
+* **Root Cause:** Your local IP address is not whitelisted in MongoDB Atlas.
+* **Solution:**
+  1. Open [MongoDB Atlas Dashboard](https://cloud.mongodb.com/).
+  2. Navigate to **Security** → **Network Access**.
+  3. Click **Add IP Address** → select **Allow Access from Anywhere (`0.0.0.0/0`)** or add your current public IP.
 
-### Issue 2: Redis Connection Warning in Console
-* **Symptom:** `[Redis] Max connection retries reached. Falling back to in-memory caching.`
-* **Cause:** Redis server is not running on port 6379.
-* **Effect:** The application **automatically switches to in-memory fallback cache mode**, ensuring zero interruption to users.
+### Issue 2: `open //./pipe/dockerDesktopLinuxEngine`
+* **Root Cause:** Docker Desktop service is closed.
+* **Solution:** Start Docker Desktop from the Windows Start menu and wait until the engine is in the "Running" state.
+
+### Issue 3: Redis Fallback Warning in Console
+* **Behavior:** `[Redis] Max connection retries reached. Falling back to in-memory caching.`
+* **Result:** The app automatically switches to the built-in `Map` memory cache without throwing errors or breaking user requests.
 
 ---
 
-## 🚀 Production Deployment Guide
+## 🚀 Vercel Production Deployment
 
-### Deploying to Vercel
+### Step 1: Connect Repository to Vercel
+1. Push your branch to GitHub (`git push -u origin <branch-name>`).
+2. Log in to [Vercel](https://vercel.com) and click **Add New Project** → Import repository.
 
-1. Push your repository to GitHub / GitLab.
-2. Import the repository into **Vercel**.
-3. Add Environment Variables in Vercel Project Settings (`MONGODB_URI`, `JWT_SECRET`, `CLOUDINARY_*`, `REDIS_URL`).
-4. Set Build Command: `npm run build`
-5. For Production Redis, use **Upstash Redis** (Serverless Redis for Vercel) and paste the `rediss://...` URL into `REDIS_URL`.
+### Step 2: Configure Production Environment Variables
+Under **Project Settings** → **Environment Variables**, add:
+* `MONGODB_URI`
+* `JWT_SECRET`
+* `ADMIN_EMAIL` & `ADMIN_PASSWORD`
+* `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+* `UPSTASH_REDIS_REST_URL` & `UPSTASH_REDIS_REST_TOKEN` (or `REDIS_URL`)
+
+### Step 3: Configure Upstash Serverless Redis on Vercel
+1. In Vercel Project Dashboard → Click **Storage** → Select **Upstash Redis**.
+2. Click **Create & Connect**. Vercel will automatically inject the `UPSTASH_REDIS_REST_*` environment variables.
+
+### Step 4: Deploy & Verify
+Click **Deploy**. Next.js will compile all static routes and serverless API endpoints.
